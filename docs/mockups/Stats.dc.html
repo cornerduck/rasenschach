@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Rasenschach Statistik</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0C}
+a{color:#3DD68C}a:hover{color:#7BE8B0}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #0B0D0C; color: #ECEFED; font-family: Inter, system-ui, sans-serif; font-size: 14px">
+
+  <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 32px; border-bottom: 1px solid #222826">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ECEFED" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21h12M7 18h10l-1-8H8l-1 8zM7 10V5h2v2h2V5h2v2h2V5h2v5"/></svg>
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: 0.04em">RASENSCHACH</span>
+      <span style="font-size: 12px; color: #9AA39E; border: 1px solid #2A312E; border-radius: 999px; padding: 4px 10px">Saison 2026/27</span>
+    </div>
+    <nav style="display: flex; flex-wrap: wrap; gap: 4px" aria-label="Hauptnavigation">
+      <a href="#" style="text-decoration: none; color: #9AA39E; padding: 10px 14px; border-radius: 10px">Saison</a>
+      <a href="Main.dc.html" style="text-decoration: none; color: #9AA39E; padding: 10px 14px; border-radius: 10px">Spieltag</a>
+      <a href="#" style="text-decoration: none; color: #ECEFED; background: #1A1F1C; padding: 10px 14px; border-radius: 10px; font-weight: 600">Statistik</a>
+      <a href="#" style="text-decoration: none; color: #9AA39E; padding: 10px 14px; border-radius: 10px">Archiv</a>
+    </nav>
+  </header>
+
+  <div style="padding: 24px 32px 40px; max-width: 1600px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px">
+      <div style="background: #0F2419; border: 1px solid #1D9053; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #3DD68C">BENT · FÜHRT</span>
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 64px; line-height: 1">112</span>
+        <span style="color: #A9C9B6">Ø 12,4 pro Spieltag · 5 Spieltagssiege</span>
+      </div>
+      <div style="background: #2A0C13; border: 1px solid #DC052D; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #FF6B84">BJÖRN · −8</span>
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 64px; line-height: 1">104</span>
+        <span style="color: #D4A9B1">Ø 11,6 pro Spieltag · 4 Spieltagssiege</span>
+      </div>
+      <div style="background: #141816; border: 1px solid #222826; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #9AA39E">NOCH ZU SPIELEN</span>
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 64px; line-height: 1">25</span>
+        <span style="color: #9AA39E">Spieltage · nächster Draft vor Fr 20:30</span>
+      </div>
+    </div>
+
+    <div style="background: #141816; border: 1px solid #222826; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px">
+        <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px">Punkte pro Spieltag</h2>
+        <div style="display: flex; gap: 16px; font-size: 12px; color: #9AA39E">
+          <span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #1D9053"></span>Bent</span>
+          <span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #DC052D"></span>Björn</span>
+        </div>
+      </div>
+      <div style="overflow-x: auto">
+        <div style="min-width: 640px; display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 12px; align-items: end; height: 220px; border-bottom: 1px solid #2A312E">
+          <sc-for list="{{days}}" as="d" hint-placeholder-count="9">
+            <div style="display: flex; justify-content: center; align-items: flex-end; gap: 4px; height: 100%">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+                <span style="font-size: 12px; font-weight: 600; color: #A9C9B6">{{d.b}}</span>
+                <div style="width: 22px; height: {{d.bh}}; background: #1D9053; border-radius: 4px 4px 0 0"></div>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+                <span style="font-size: 12px; font-weight: 600; color: #D4A9B1">{{d.j}}</span>
+                <div style="width: 22px; height: {{d.jh}}; background: #DC052D; border-radius: 4px 4px 0 0"></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="min-width: 640px; display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 12px; padding-top: 8px">
+          <sc-for list="{{days}}" as="d" hint-placeholder-count="9">
+            <span style="text-align: center; font-size: 12px; color: #9AA39E">{{d.n}}</span>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 16px">
+
+      <div style="background: #141816; border: 1px solid #222826; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+        <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px">Punkte nach Feld</h2>
+        <div style="display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 0; font-size: 13px">
+          <span style="padding: 8px 0; color: #9AA39E; font-size: 12px; border-bottom: 1px solid #222826">Feld</span>
+          <span style="padding: 8px 0; color: #3DD68C; font-size: 12px; font-weight: 600; text-align: right; border-bottom: 1px solid #222826">Bent</span>
+          <span style="padding: 8px 0; color: #FF6B84; font-size: 12px; font-weight: 600; text-align: right; border-bottom: 1px solid #222826">Björn</span>
+          <sc-for list="{{fieldRows}}" as="r" hint-placeholder-count="10">
+            <span style="padding: 9px 0; border-bottom: 1px solid #1C211F">{{r.f}}</span>
+            <span style="padding: 9px 0; text-align: right; font-weight: 600; border-bottom: 1px solid #1C211F">{{r.b}}</span>
+            <span style="padding: 9px 0; text-align: right; font-weight: 600; border-bottom: 1px solid #1C211F">{{r.j}}</span>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="background: #141816; border: 1px solid #222826; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px">
+          <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px">Beste Spieler</h2>
+          <div style="display: flex; gap: 4px">
+            <button type="button" style="font: inherit; font-size: 12px; font-weight: 600; color: #0B0D0C; background: #ECEFED; border: 0; border-radius: 999px; padding: 8px 12px">Gesamt</button>
+            <button type="button" style="font: inherit; font-size: 12px; color: #ECEFED; background: #1A1F1C; border: 1px solid #2A312E; border-radius: 999px; padding: 8px 12px">Turm</button>
+            <button type="button" style="font: inherit; font-size: 12px; color: #ECEFED; background: #1A1F1C; border: 1px solid #2A312E; border-radius: 999px; padding: 8px 12px">König</button>
+          </div>
+        </div>
+        <sc-for list="{{players}}" as="p" hint-placeholder-count="8">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #1C211F">
+            <span style="width: 20px; color: #9AA39E; font-size: 12px">{{p.r}}</span>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+              <span style="font-weight: 600">{{p.n}}</span>
+              <span style="font-size: 12px; color: #9AA39E">{{p.m}}</span>
+            </div>
+            <span style="font-size: 12px; font-weight: 600; color: {{p.wc}}">{{p.w}}</span>
+            <span style="width: 44px; text-align: right; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px">{{p.p}}</span>
+          </div>
+        </sc-for>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1040}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const b = [14, 9, 17, 6, 12, 15, 11, 13, 15];
+    const j = [10, 16, 8, 12, 14, 9, 13, 14, 8];
+    const h = (v) => Math.round(v / 17 * 160) + 'px';
+    const days = b.map((v, i) => ({ n: 'ST ' + String(i + 1).padStart(2, '0'), b: v, j: j[i], bh: h(v), jh: h(j[i]) }));
+    return {
+      days,
+      fieldRows: [
+        { f: '+/−3', b: '+9', j: '+3' }, { f: '−/+3', b: '+15', j: '+9' },
+        { f: '+1', b: '+6', j: '+7' }, { f: '−1', b: '−3', j: '−2' },
+        { f: '?-Feld', b: '+4', j: '+8' }, { f: 'Turm', b: '+14', j: '+11' },
+        { f: 'Läufer', b: '+17', j: '+20' }, { f: 'Springer', b: '+12', j: '+9' },
+        { f: 'Dame', b: '+18', j: '+21' }, { f: 'König', b: '+20', j: '+18' }
+      ],
+      players: [
+        { r: 1, n: 'Joshua Kimmich', m: 'MF · FCB · Läufer', w: 'Björn', wc: '#FF6B84', p: '+15' },
+        { r: 2, n: 'Michael Olise', m: 'MF · FCB · Dame', w: 'Björn', wc: '#FF6B84', p: '+14' },
+        { r: 3, n: 'Niclas Füllkrug', m: 'ST · SVW · König', w: 'Bent', wc: '#3DD68C', p: '+11' },
+        { r: 4, n: 'Ermedin Demirović', m: 'ST · VFB · König', w: 'Bent', wc: '#3DD68C', p: '+9' },
+        { r: 5, n: 'Harry Kane', m: 'ST · FCB · Dame', w: 'Björn', wc: '#FF6B84', p: '+9' },
+        { r: 6, n: 'Oliver Baumann', m: 'TW · TSG · Turm', w: 'Bent', wc: '#3DD68C', p: '+8' },
+        { r: 7, n: 'Marco Grüll', m: 'ST · SVW · Dame', w: 'Bent', wc: '#3DD68C', p: '+8' },
+        { r: 8, n: 'Gregor Kobel', m: 'TW · BVB · Turm', w: 'Björn', wc: '#FF6B84', p: '+7' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

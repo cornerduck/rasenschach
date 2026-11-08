@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Rasenschach Spieler-Draft</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0C}
+a{color:#3DD68C}a:hover{color:#7BE8B0}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #0B0D0C; color: #ECEFED; font-family: Inter, system-ui, sans-serif; font-size: 14px">
+
+  <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 32px; border-bottom: 1px solid #222826">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ECEFED" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21h12M7 18h10l-1-8H8l-1 8zM7 10V5h2v2h2V5h2v2h2V5h2v5"/></svg>
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: 0.04em">RASENSCHACH</span>
+      <span style="font-size: 12px; color: #9AA39E; border: 1px solid #2A312E; border-radius: 999px; padding: 4px 10px">Spieltag 10 · Spieler-Draft</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; background: #2A0C13; border: 1px solid #DC052D; border-radius: 999px; padding: 8px 16px">
+      <span style="width: 8px; height: 8px; border-radius: 999px; background: #FF6B84"></span>
+      <span style="font-weight: 600">Björn ist am Zug</span>
+      <span style="color: #D4A9B1">2 Spieler setzen</span>
+    </div>
+    <div style="font-size: 12px; color: #9AA39E">Deadline Fr 20:30</div>
+  </header>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 24px; padding: 24px 32px 40px; max-width: 1600px; margin: 0 auto; box-sizing: border-box">
+
+    <main style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+      <div style="overflow-x: auto">
+      <div style="min-width: 760px; display: flex; flex-direction: column; gap: 10px">
+
+        <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{figs}}" as="f" hint-placeholder-count="5">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0">
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: 0.04em; line-height: 1">{{f.n}}</span>
+              <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; color: #9AA39E">{{f.s}}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{bjoern}}" as="c" hint-placeholder-count="5">
+            <sc-if value="{{c.filled}}" hint-placeholder-val="{{ true }}">
+              <div style="background: #2A0C13; border: 1px solid #DC052D; border-radius: 14px; padding: 14px; min-height: 190px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px">
+                <div style="width: 96px; height: 96px; border-radius: 999px; background: #1A0A0E; border: 1px solid #5A1A27; display: flex; align-items: center; justify-content: center">
+                  <svg width="62" height="58" viewBox="0 0 80 76" role="img" aria-label="Trikot mit Rückennummer {{c.nr}}"><path d="M22 6 L32 3 Q40 10 48 3 L58 6 L74 20 L64 32 L58 27 L58 73 L22 73 L22 27 L16 32 L6 20 Z" fill="{{c.kit}}" stroke="{{c.trim}}" stroke-width="2.5" stroke-linejoin="round"></path><text x="40" y="56" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-weight="800" font-size="28" fill="{{c.numc}}">{{c.nr}}</text></svg>
+                </div>
+                <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 22px">{{c.name}}</span>
+                <span style="font-size: 11px; color: #D4A9B1">{{c.meta}}</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{c.empty}}" hint-placeholder-val="{{ false }}">
+              <button type="button" aria-label="Spieler hier platzieren" style="font: inherit; color: #FF6B84; background: transparent; border: 1.5px dashed #DC052D; border-radius: 14px; min-height: 190px; display: flex; align-items: center; justify-content: center; cursor: pointer">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </sc-if>
+          </sc-for>
+        </div>
+
+        <div style="display: flex; align-items: stretch; height: 48px; border-radius: 12px; overflow: hidden">
+          <div style="flex: 1; background: #143D28; display: flex; align-items: center; justify-content: space-between; padding: 0 20px">
+            <span style="font-size: 12px; font-weight: 600; color: #BFE3CD">WARTET</span>
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: 0.06em; color: #FFFFFF">BENT</span>
+          </div>
+          <div style="width: 72px; background: #0B0D0C; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px">VS</div>
+          <div style="flex: 1; background: #DC052D; display: flex; align-items: center; justify-content: space-between; padding: 0 20px">
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: 0.06em; color: #FFFFFF">BJÖRN</span>
+            <span style="font-size: 12px; font-weight: 600; color: #FFFFFF">● AM ZUG</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{bent}}" as="c" hint-placeholder-count="5">
+            <sc-if value="{{c.filled}}" hint-placeholder-val="{{ true }}">
+              <div style="background: #0F2419; border: 1px solid #1D9053; border-radius: 14px; padding: 14px; min-height: 190px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px">
+                <div style="width: 96px; height: 96px; border-radius: 999px; background: #0A1A12; border: 1px solid #1F4A33; display: flex; align-items: center; justify-content: center">
+                  <svg width="62" height="58" viewBox="0 0 80 76" role="img" aria-label="Trikot mit Rückennummer {{c.nr}}"><path d="M22 6 L32 3 Q40 10 48 3 L58 6 L74 20 L64 32 L58 27 L58 73 L22 73 L22 27 L16 32 L6 20 Z" fill="{{c.kit}}" stroke="{{c.trim}}" stroke-width="2.5" stroke-linejoin="round"></path><text x="40" y="56" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-weight="800" font-size="28" fill="{{c.numc}}">{{c.nr}}</text></svg>
+                </div>
+                <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 22px">{{c.name}}</span>
+                <span style="font-size: 11px; color: #A9C9B6">{{c.meta}}</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{c.empty}}" hint-placeholder-val="{{ false }}">
+              <div style="border: 1.5px dashed #1F3A2B; border-radius: 14px; min-height: 190px"></div>
+            </sc-if>
+          </sc-for>
+        </div>
+      </div>
+      </div>
+      <span style="font-size: 12px; color: #9AA39E">Foto von Sofascore im Kreis, fehlt es, steht dort das Trikot mit Rückennummer. Turm nur mit Torhütern.</span>
+    </main>
+
+    <aside style="flex: 1 1 300px; max-width: 380px; background: #141816; border: 1px solid #222826; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+      <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 24px">Spieler wählen</h2>
+      <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #9AA39E">Suche
+        <input type="text" placeholder="Name oder Verein" style="font: inherit; font-size: 14px; color: #ECEFED; background: #0B0D0C; border: 1px solid #2A312E; border-radius: 10px; padding: 12px 14px">
+      </label>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px">
+        <button type="button" style="font: inherit; font-size: 12px; font-weight: 600; color: #0B0D0C; background: #ECEFED; border: 0; border-radius: 999px; padding: 8px 12px">Alle</button>
+        <button type="button" style="font: inherit; font-size: 12px; color: #ECEFED; background: #1A1F1C; border: 1px solid #2A312E; border-radius: 999px; padding: 8px 12px">Tor</button>
+        <button type="button" style="font: inherit; font-size: 12px; color: #ECEFED; background: #1A1F1C; border: 1px solid #2A312E; border-radius: 999px; padding: 8px 12px">Abwehr</button>
+        <button type="button" style="font: inherit; font-size: 12px; color: #ECEFED; background: #1A1F1C; border: 1px solid #2A312E; border-radius: 999px; padding: 8px 12px">Mittelfeld</button>
+        <button type="button" style="font: inherit; font-size: 12px; color: #ECEFED; background: #1A1F1C; border: 1px solid #2A312E; border-radius: 999px; padding: 8px 12px">Sturm</button>
+      </div>
+      <div style="display: flex; flex-direction: column">
+        <sc-for list="{{pool}}" as="p" hint-placeholder-count="9">
+          <button type="button" style="font: inherit; color: #ECEFED; text-align: left; background: transparent; border: 0; border-bottom: 1px solid #1C211F; padding: 10px 0; display: flex; align-items: center; gap: 10px; cursor: pointer; opacity: {{p.op}}">
+            <svg width="30" height="28" viewBox="0 0 80 76" aria-hidden="true"><path d="M22 6 L32 3 Q40 10 48 3 L58 6 L74 20 L64 32 L58 27 L58 73 L22 73 L22 27 L16 32 L6 20 Z" fill="{{p.kit}}" stroke="{{p.trim}}" stroke-width="3" stroke-linejoin="round"></path><text x="40" y="56" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-weight="800" font-size="30" fill="{{p.numc}}">{{p.nr}}</text></svg>
+            <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+              <span style="font-weight: 600">{{p.n}}</span>
+              <span style="font-size: 12px; color: #9AA39E">{{p.m}}</span>
+            </span>
+            <span style="font-size: 12px; font-weight: 600; color: {{p.uc}}">{{p.u}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1040}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const kits = {
+      FCB: ['#DC052D', '#FFFFFF', '#FFFFFF'], SVW: ['#1D9053', '#FFFFFF', '#FFFFFF'], BVB: ['#FDE100', '#111111', '#111111'],
+      VFB: ['#FFFFFF', '#E32219', '#E32219'], RBL: ['#FFFFFF', '#DD0741', '#DD0741'], SGE: ['#111111', '#E1000F', '#FFFFFF'],
+      B04: ['#E32221', '#111111', '#FFFFFF'], TSG: ['#1C5FB8', '#FFFFFF', '#FFFFFF']
+    };
+    const k = (club, o) => { const x = kits[club] || ['#2A312E', '#ECEFED', '#ECEFED']; return { ...o, kit: x[0], trim: x[1], numc: x[2] }; };
+    const e = { filled: false, empty: true };
+    return {
+      figs: [
+        { n: 'TURM', s: 'WEISSE WESTE' }, { n: 'LÄUFER', s: 'MOTOR' }, { n: 'SPRINGER', s: 'BALLMAGNET' },
+        { n: 'DAME', s: 'SPIELMACHER' }, { n: 'KÖNIG', s: 'TORJÄGER' }
+      ],
+      bjoern: [
+        k('BVB', { filled: true, empty: false, name: 'KOBEL', nr: 1, meta: 'TW · BVB · 2/3 genutzt' }),
+        e, e,
+        k('FCB', { filled: true, empty: false, name: 'OLISE', nr: 17, meta: 'MF · FCB · 1/3 genutzt' }),
+        e
+      ],
+      bent: [
+        e,
+        k('SVW', { filled: true, empty: false, name: 'STAGE', nr: 6, meta: 'MF · SVW · 1/3 genutzt' }),
+        e, e,
+        k('SVW', { filled: true, empty: false, name: 'FÜLLKRUG', nr: 10, meta: 'ST · SVW · 2/3 genutzt' })
+      ],
+      pool: [
+        k('FCB', { n: 'Harry Kane', nr: 9, m: 'ST · Bayern', u: '1/3', uc: '#9AA39E', op: 1 }),
+        k('FCB', { n: 'Joshua Kimmich', nr: 6, m: 'MF · Bayern', u: '3/3', uc: '#F2A93B', op: 0.45 }),
+        k('RBL', { n: 'Antonio Nusa', nr: 7, m: 'ST · Leipzig', u: '0/3', uc: '#9AA39E', op: 1 }),
+        k('VFB', { n: 'Ermedin Demirović', nr: 9, m: 'ST · Stuttgart', u: 'bei Bent', uc: '#3DD68C', op: 0.45 }),
+        k('SGE', { n: 'Can Uzun', nr: 10, m: 'MF · Frankfurt', u: '0/3', uc: '#9AA39E', op: 1 }),
+        k('B04', { n: 'Patrik Schick', nr: 14, m: 'ST · Leverkusen', u: '2/3', uc: '#9AA39E', op: 1 }),
+        k('BVB', { n: 'Serhou Guirassy', nr: 9, m: 'ST · Dortmund', u: '0/3', uc: '#9AA39E', op: 1 }),
+        k('TSG', { n: 'Andrej Kramarić', nr: 27, m: 'ST · Hoffenheim', u: '1/3', uc: '#9AA39E', op: 1 }),
+        k('FCB', { n: 'Michael Olise', nr: 17, m: 'MF · Bayern', u: 'gesetzt', uc: '#FF6B84', op: 0.45 })
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

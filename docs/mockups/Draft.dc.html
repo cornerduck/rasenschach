@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Rasenschach Thesen-Draft</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0C}
+a{color:#3DD68C}a:hover{color:#7BE8B0}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #0B0D0C; color: #ECEFED; font-family: Inter, system-ui, sans-serif; font-size: 14px">
+
+  <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 32px; border-bottom: 1px solid #222826">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ECEFED" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21h12M7 18h10l-1-8H8l-1 8zM7 10V5h2v2h2V5h2v2h2V5h2v5"/></svg>
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: 0.04em">RASENSCHACH</span>
+      <span style="font-size: 12px; color: #9AA39E; border: 1px solid #2A312E; border-radius: 999px; padding: 4px 10px">Spieltag 10 · Thesen-Draft</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; background: #0F2419; border: 1px solid #1D9053; border-radius: 999px; padding: 8px 16px">
+      <span style="width: 8px; height: 8px; border-radius: 999px; background: #3DD68C"></span>
+      <span style="font-weight: 600">Bent ist am Zug</span>
+      <span style="color: #A9C9B6">2 Thesen setzen</span>
+    </div>
+    <div style="font-size: 12px; color: #9AA39E">Deadline Fr 20:30 · Anstoß BVB · FCB</div>
+  </header>
+
+  <div style="padding: 20px 32px 0; max-width: 1600px; margin: 0 auto; box-sizing: border-box">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+      <span style="font-size: 12px; color: #9AA39E; letter-spacing: 0.08em; margin-right: 8px">REIHENFOLGE</span>
+      <sc-for list="{{order}}" as="o" hint-placeholder-count="10">
+        <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 18px; background: {{o.bg}}; border: {{o.border}}; color: {{o.color}}">{{o.l}}</div>
+      </sc-for>
+      <span style="font-size: 12px; color: #9AA39E; margin-left: 8px">Snake-Draft · Bent hat Schnick Schnack Schnuck gewonnen</span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 24px; padding: 20px 32px 40px; max-width: 1600px; margin: 0 auto; box-sizing: border-box">
+
+    <main style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+      <div style="overflow-x: auto">
+      <div style="min-width: 760px; display: flex; flex-direction: column; gap: 10px">
+
+        <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{fields}}" as="f" hint-placeholder-count="5">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0">
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 30px; line-height: 1">{{f.v}}</span>
+              <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; color: #9AA39E">{{f.l}}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{bent}}" as="c" hint-placeholder-count="5">
+            <sc-if value="{{c.filled}}" hint-placeholder-val="{{ true }}">
+              <div style="background: #0F2419; border: 1px solid #1D9053; border-radius: 14px; padding: 14px; min-height: 170px; display: flex; flex-direction: column; gap: 10px">
+                <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #3DD68C">{{c.game}}</span>
+                <span style="font-size: 14px; line-height: 1.4">{{c.text}}</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{c.empty}}" hint-placeholder-val="{{ false }}">
+              <button type="button" aria-label="These hier platzieren" style="font: inherit; color: #3DD68C; background: transparent; border: 1.5px dashed #1D9053; border-radius: 14px; min-height: 170px; display: flex; align-items: center; justify-content: center; cursor: pointer">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </sc-if>
+          </sc-for>
+        </div>
+
+        <div style="display: flex; align-items: stretch; height: 48px; border-radius: 12px; overflow: hidden">
+          <div style="flex: 1; background: #1D9053; display: flex; align-items: center; justify-content: space-between; padding: 0 20px">
+            <span style="font-size: 12px; font-weight: 600; color: #FFFFFF">● AM ZUG</span>
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: 0.06em; color: #FFFFFF">BENT</span>
+          </div>
+          <div style="width: 72px; background: #0B0D0C; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px">VS</div>
+          <div style="flex: 1; background: #4A1220; display: flex; align-items: center; justify-content: space-between; padding: 0 20px">
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: 0.06em; color: #FFFFFF">BJÖRN</span>
+            <span style="font-size: 12px; font-weight: 600; color: #F2C9D1">WARTET</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{bjoern}}" as="c" hint-placeholder-count="5">
+            <sc-if value="{{c.filled}}" hint-placeholder-val="{{ true }}">
+              <div style="background: #2A0C13; border: 1px solid #DC052D; border-radius: 14px; padding: 14px; min-height: 170px; display: flex; flex-direction: column; gap: 10px">
+                <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #FF6B84">{{c.game}}</span>
+                <span style="font-size: 14px; line-height: 1.4">{{c.text}}</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{c.empty}}" hint-placeholder-val="{{ false }}">
+              <div style="border: 1.5px dashed #3A2228; border-radius: 14px; min-height: 170px"></div>
+            </sc-if>
+          </sc-for>
+        </div>
+
+      </div>
+      </div>
+      <span style="font-size: 12px; color: #9AA39E">These im Pool auswählen und auf ein freies Feld setzen. Björn sieht deine Züge live auf seinem Laptop.</span>
+    </main>
+
+    <aside style="flex: 1 1 300px; max-width: 380px; background: #141816; border: 1px solid #222826; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 24px">Thesen-Pool</h2>
+        <span style="font-size: 12px; color: #9AA39E">9 von 12 frei</span>
+      </div>
+      <sc-for list="{{pool}}" as="t" hint-placeholder-count="9">
+        <button type="button" style="font: inherit; text-align: left; color: #ECEFED; background: {{t.bg}}; border: {{t.border}}; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; cursor: pointer">
+          <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: {{t.tag}}">{{t.game}}</span>
+          <span style="font-size: 13px; line-height: 1.4">{{t.text}}</span>
+        </button>
+      </sc-for>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1040}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const seq = ['B','J','J','B','B','J','J','B','B','J'];
+    const done = 3;
+    const order = seq.map((l, i) => {
+      const bent = l === 'B';
+      const isDone = i < done;
+      const now = i === 3 || i === 4;
+      return {
+        l: l === 'B' ? 'B' : 'J',
+        bg: isDone ? (bent ? '#1D9053' : '#DC052D') : '#141816',
+        border: now ? '2px solid #3DD68C' : '1px solid #2A312E',
+        color: isDone ? '#FFFFFF' : (bent ? '#3DD68C' : '#FF6B84')
+      };
+    });
+    const e = { filled: false, empty: true };
+    return {
+      order,
+      fields: [
+        { v: '+/−3', l: 'WAHRSCHEINLICH' }, { v: '−/+3', l: 'UNWAHRSCHEINLICH' },
+        { v: '+1', l: 'WAHRSCHEINLICH' }, { v: '−1', l: 'UNWAHRSCHEINLICH' },
+        { v: '? = ±3', l: 'GELOST' }
+      ],
+      bent: [
+        { filled: true, empty: false, game: 'SPIELTAG', text: 'Es fallen mindestens 25 Tore am Spieltag.' },
+        e, e, e, e
+      ],
+      bjoern: [
+        e,
+        { filled: true, empty: false, game: 'SVW · RBL', text: 'Werder gewinnt gegen Leipzig.' },
+        e,
+        { filled: true, empty: false, game: 'SPIELTAG', text: 'Kein Spiel endet 0 : 0.' },
+        e
+      ],
+      pool: [
+        { game: 'BVB · FCB', text: 'Kane trifft im Topspiel doppelt.', sel: true },
+        { game: 'SPIELTAG', text: 'Mindestens zwei Platzverweise am Spieltag.' },
+        { game: 'B04 · VFB', text: 'Leverkusen bleibt ohne Gegentor.' },
+        { game: 'SGE · TSG', text: 'Frankfurt dreht einen Rückstand.' },
+        { game: 'BMG · SCF', text: 'Gladbach holt endlich den zweiten Saisonsieg.' },
+        { game: 'FCU · M05', text: 'Union schießt kein Tor.' },
+        { game: 'S04 · HSV', text: 'Das Spiel hat mehr als 4 Tore.' },
+        { game: 'FCA · KOE', text: 'Köln liegt zur Halbzeit vorne.' },
+        { game: 'SVE · SCP', text: 'Elversberg hat über 60 % Ballbesitz.' }
+      ].map((t) => ({
+        ...t,
+        bg: t.sel ? '#0F2419' : '#1A1F1C',
+        border: t.sel ? '2px solid #3DD68C' : '1px solid #2A312E',
+        tag: t.sel ? '#3DD68C' : '#9AA39E'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

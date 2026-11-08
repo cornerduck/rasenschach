@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Rasenschach Auswertung eintragen</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0C}
+a{color:#3DD68C}a:hover{color:#7BE8B0}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #0B0D0C; color: #ECEFED; font-family: Inter, system-ui, sans-serif; font-size: 14px">
+
+  <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 32px; border-bottom: 1px solid #222826">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ECEFED" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21h12M7 18h10l-1-8H8l-1 8zM7 10V5h2v2h2V5h2v2h2V5h2v5"/></svg>
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: 0.04em">RASENSCHACH</span>
+      <span style="font-size: 12px; color: #9AA39E; border: 1px solid #2A312E; border-radius: 999px; padding: 4px 10px">Spieltag 09 · Auswertung</span>
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #0B0D0C; background: #F2A93B; border-radius: 999px; padding: 4px 10px">ADMIN</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px">
+      <button type="button" style="font: inherit; font-weight: 600; color: #ECEFED; background: #1A1F1C; border: 1px solid #2A312E; border-radius: 10px; padding: 12px 16px; cursor: pointer">Kader aktualisieren</button>
+      <button type="button" style="font: inherit; font-weight: 600; color: #0B0D0C; background: #ECEFED; border: 0; border-radius: 10px; padding: 12px 16px; cursor: pointer">Spieltag von Sofascore abrufen</button>
+    </div>
+  </header>
+
+  <div style="padding: 16px 32px 0; max-width: 1600px; margin: 0 auto; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; color: #9AA39E">
+    <span>Zuletzt abgerufen So 08.11. 19:42</span>
+    <span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #2A312E"></span>automatisch von Sofascore</span>
+    <span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 3px; border: 1.5px solid #F2A93B"></span>per Hand eintragen</span>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 20px; padding: 16px 32px 40px; max-width: 1600px; margin: 0 auto; box-sizing: border-box">
+
+    <section style="flex: 1 1 420px; background: #141816; border: 1px solid #222826; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+        <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px">Thesen auflösen</h2>
+        <span style="font-size: 12px; color: #9AA39E">8 von 10 bestätigt</span>
+      </div>
+      <sc-for list="{{theses}}" as="t" hint-placeholder-count="10">
+        <div style="border-bottom: 1px solid #1C211F; padding: 10px 0; display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; justify-content: space-between; gap: 12px">
+            <span style="font-size: 13px; line-height: 1.4"><span style="font-weight: 700; color: {{t.oc}}">{{t.o}}</span> · {{t.text}}</span>
+            <span style="font-size: 11px; color: #9AA39E; white-space: nowrap">{{t.field}}</span>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
+            <button type="button" style="font: inherit; font-size: 12px; font-weight: 600; color: {{t.yc}}; background: {{t.yb}}; border: 1px solid #2A312E; border-radius: 8px; padding: 7px 10px; cursor: pointer">Eingetroffen</button>
+            <button type="button" style="font: inherit; font-size: 12px; font-weight: 600; color: {{t.nc}}; background: {{t.nb}}; border: 1px solid #2A312E; border-radius: 8px; padding: 7px 10px; cursor: pointer">Nicht eingetroffen</button>
+            <span style="flex: 1"></span>
+            <span style="font-size: 12px; color: {{t.bc}}">Bent {{t.bs}}</span>
+            <span style="font-size: 12px; color: {{t.jc}}">Björn {{t.js}}</span>
+          </div>
+        </div>
+      </sc-for>
+    </section>
+
+    <section style="flex: 2 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+      <div style="background: #141816; border: 1px solid #222826; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+        <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px">Spielerwerte</h2>
+        <div style="overflow-x: auto">
+          <div style="min-width: 720px; display: grid; grid-template-columns: 1.6fr 0.9fr 2.2fr 1.3fr 0.6fr; font-size: 13px">
+            <span style="padding: 8px 0; font-size: 12px; color: #9AA39E; border-bottom: 1px solid #222826">Spieler</span>
+            <span style="padding: 8px 0; font-size: 12px; color: #9AA39E; border-bottom: 1px solid #222826">Figur</span>
+            <span style="padding: 8px 0; font-size: 12px; color: #9AA39E; border-bottom: 1px solid #222826">Von Sofascore</span>
+            <span style="padding: 8px 0; font-size: 12px; color: #9AA39E; border-bottom: 1px solid #222826">Per Hand</span>
+            <span style="padding: 8px 0; font-size: 12px; color: #9AA39E; text-align: right; border-bottom: 1px solid #222826">Punkte</span>
+            <sc-for list="{{rows}}" as="r" hint-placeholder-count="10">
+              <span style="padding: 10px 0; border-bottom: 1px solid #1C211F; display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 600; color: {{r.oc}}">{{r.n}}</span><span style="font-size: 11px; color: #9AA39E">{{r.m}}</span></span>
+              <span style="padding: 10px 0; border-bottom: 1px solid #1C211F; color: #C9D0CC">{{r.f}}</span>
+              <span style="padding: 10px 0; border-bottom: 1px solid #1C211F; color: #C9D0CC">{{r.auto}}</span>
+              <span style="padding: 6px 0; border-bottom: 1px solid #1C211F; display: flex; align-items: center">
+                <sc-if value="{{r.hasManual}}" hint-placeholder-val="{{ false }}">
+                  <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #9AA39E">{{r.ml}}
+                    <input type="text" value="{{r.mv}}" style="font: inherit; width: 64px; color: #ECEFED; background: #0B0D0C; border: 1.5px solid #F2A93B; border-radius: 8px; padding: 6px 8px">
+                  </label>
+                </sc-if>
+                <sc-if value="{{r.noManual}}" hint-placeholder-val="{{ true }}">
+                  <span style="color: #6F7873">nicht nötig</span>
+                </sc-if>
+              </span>
+              <span style="padding: 10px 0; border-bottom: 1px solid #1C211F; text-align: right; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 20px">{{r.p}}</span>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="background: #141816; border: 1px solid #222826; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+        <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px">Ligaweit und Woche</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #9AA39E">Laufleistung Platz 1 bis 3
+            <input type="text" value="Regeer, Kimmich, Stach" style="font: inherit; font-size: 13px; color: #ECEFED; background: #0B0D0C; border: 1.5px solid #F2A93B; border-radius: 10px; padding: 10px 12px">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #9AA39E">Meiste Sprints
+            <input type="text" value="Nusa" style="font: inherit; font-size: 13px; color: #ECEFED; background: #0B0D0C; border: 1.5px solid #F2A93B; border-radius: 10px; padding: 10px 12px">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #9AA39E">Team der Woche (Sofascore)
+            <input type="text" value="11 Spieler übernommen" style="font: inherit; font-size: 13px; color: #C9D0CC; background: #1A1F1C; border: 1px solid #2A312E; border-radius: 10px; padding: 10px 12px">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #9AA39E">Spieler der Woche (Sofascore)
+            <input type="text" value="Demirović" style="font: inherit; font-size: 13px; color: #C9D0CC; background: #1A1F1C; border: 1px solid #2A312E; border-radius: 10px; padding: 10px 12px">
+          </label>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1040}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const G = '#3DD68C', R = '#FF6B84';
+    const th = (o, field, text, res, bOk, jOk) => ({
+      o, oc: o === 'Bent' ? G : R, field, text,
+      yc: res === 'y' ? '#0B0D0C' : '#C9D0CC', yb: res === 'y' ? '#ECEFED' : '#1A1F1C',
+      nc: res === 'n' ? '#0B0D0C' : '#C9D0CC', nb: res === 'n' ? '#ECEFED' : '#1A1F1C',
+      bs: bOk ? '✓' : 'offen', bc: bOk ? G : '#9AA39E', js: jOk ? '✓' : 'offen', jc: jOk ? R : '#9AA39E'
+    });
+    const row = (o, n, m, f, auto, ml, mv, p) => ({
+      o, oc: o === 'Bent' ? G : R, n, m, f, auto, ml, mv, p,
+      hasManual: !!ml, noManual: !ml
+    });
+    return {
+      theses: [
+        th('Bent', '+/−3', 'Es gibt mindestens 3 Unentschieden.', 'y', true, true),
+        th('Bent', '−/+3', 'Freiburg schickt auch Lustrinelli in die Arbeitslosigkeit.', 'n', true, true),
+        th('Bent', '+1', 'Leipzig kassiert zuhause das erste Gegentor.', 'y', true, true),
+        th('Bent', '−1', '5 Tore von nicht nominierten deutschen Spielern.', 'y', true, false),
+        th('Bent', '?-Feld', 'Die Knappen schlagen Hoffenheim.', 'n', true, true),
+        th('Björn', '−/+3', 'Elversberg gewinnt in Dortmund.', 'n', true, true),
+        th('Björn', '+/−3', 'Der HSV trifft nach der 80. Minute zum Sieg.', 'n', true, true),
+        th('Björn', '+1', 'Der Bremer Keeper zeigt 5+ Paraden.', 'y', false, true),
+        th('Björn', '−1', 'Frankfurt bleibt unter 1,0 xG.', 'n', true, true),
+        th('Björn', '?-Feld', 'Köln trifft mindestens einmal.', 'y', true, true)
+      ],
+      rows: [
+        row('Bent', 'Baumann', 'TW · TSG', 'Turm', 'Zu Null · 5 Paraden', '', '', '+2'),
+        row('Bent', 'Regeer', 'MF · SVW', 'Läufer', '90 Minuten', 'km', '12,1', '+2'),
+        row('Bent', 'Mala', 'MF · KOE', 'Springer', 'Dauerfeuer · 5 Offensivaktionen', '', '', '+1'),
+        row('Bent', 'Scherhant', 'ST · SCF', 'Dame', '1 Assist', '', '', '+1'),
+        row('Bent', 'Demirović', 'ST · VFB', 'König', '2 Tore', '', '', '+3'),
+        row('Björn', 'Backhaus', 'TW · SCF', 'Turm', 'Zu Null · 3 Paraden', '', '', '+1'),
+        row('Björn', 'Castañeda', 'MF · SCP', 'Läufer', '90 Minuten', 'km', '11,3', '+1'),
+        row('Björn', 'Maza', 'ST · B04', 'Springer', 'Dauerfeuer · 2 Offensivaktionen', '', '', '±0'),
+        row('Björn', 'Silva', 'ST · BVB', 'Dame', 'Tor + Assist', '', '', '+3'),
+        row('Björn', 'Asllani', 'ST · TSG', 'König', 'kein Tor', '', '', '±0')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

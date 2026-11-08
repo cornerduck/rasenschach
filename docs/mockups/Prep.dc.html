@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Rasenschach Spielvorbereitung</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0C}
+a{color:#3DD68C}a:hover{color:#7BE8B0}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #0B0D0C; color: #ECEFED; font-family: Inter, system-ui, sans-serif; font-size: 14px">
+
+  <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 32px; border-bottom: 1px solid #222826">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ECEFED" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21h12M7 18h10l-1-8H8l-1 8zM7 10V5h2v2h2V5h2v2h2V5h2v5"/></svg>
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: 0.04em">RASENSCHACH</span>
+      <span style="font-size: 12px; color: #9AA39E; border: 1px solid #2A312E; border-radius: 999px; padding: 4px 10px">Spieltag 10 · Spielvorbereitung</span>
+    </div>
+    <div style="font-size: 12px; color: #9AA39E">Schritt 2 von 3 · danach Thesen-Draft</div>
+  </header>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px; padding: 24px 32px 40px; max-width: 1600px; margin: 0 auto; box-sizing: border-box">
+
+    <section style="background: #141816; border: 1px solid #222826; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 28px">Wer beginnt?</h2>
+        <span style="color: #9AA39E">Schnick Schnack Schnuck, danach den Gewinner antippen.</span>
+      </div>
+      <button type="button" style="font: inherit; color: #ECEFED; text-align: left; background: #0F2419; border: 2px solid #3DD68C; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 4px; cursor: pointer">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 44px; letter-spacing: 0.04em">BENT</span>
+        <span style="font-size: 12px; font-weight: 600; color: #3DD68C">● BEGINNT DEN THESEN-DRAFT</span>
+      </button>
+      <div style="text-align: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px; color: #6F7873">VS</div>
+      <button type="button" style="font: inherit; color: #ECEFED; text-align: left; background: #1A1214; border: 1px solid #5A1A27; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 4px; cursor: pointer">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 44px; letter-spacing: 0.04em">BJÖRN</span>
+        <span style="font-size: 12px; font-weight: 600; color: #D4A9B1">beginnt den Spieler-Draft</span>
+      </button>
+    </section>
+
+    <section style="background: #141816; border: 1px solid #222826; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 16px">
+      <div style="align-self: stretch; display: flex; flex-direction: column; gap: 4px">
+        <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 28px">?-Feld</h2>
+        <span style="color: #9AA39E">Gilt diese Woche für beide.</span>
+      </div>
+      <div style="position: relative; width: 280px; height: 280px">
+        <svg width="280" height="280" viewBox="0 0 280 280" role="img" aria-label="Rad für das ?-Feld, gelost ±3">
+          <sc-for list="{{qSeg}}" as="s" hint-placeholder-count="5">
+            <path d="{{s.d}}" fill="{{s.fill}}" stroke="#0B0D0C" stroke-width="3"></path>
+            <text x="{{s.tx}}" y="{{s.ty}}" text-anchor="middle" dominant-baseline="middle" font-family="Barlow Condensed, sans-serif" font-weight="800" font-size="30" fill="{{s.tc}}">{{s.l}}</text>
+          </sc-for>
+          <circle cx="140" cy="140" r="26" fill="#0B0D0C" stroke="#2A312E" stroke-width="2"></circle>
+        </svg>
+        <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true" style="position: absolute; right: -18px; top: 126px"><path d="M2 14 L26 2 L26 26 Z" fill="#ECEFED"></path></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 2px">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 40px; line-height: 1">±3</span>
+        <span style="color: #9AA39E; font-size: 13px">Trifft ein +3 · trifft nicht ein −3</span>
+      </div>
+      <button type="button" style="font: inherit; font-weight: 600; color: #0B0D0C; background: #ECEFED; border: 0; border-radius: 10px; padding: 12px 20px; cursor: pointer">Rad drehen</button>
+    </section>
+
+    <section style="background: #141816; border: 1px solid #222826; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 16px">
+      <div style="align-self: stretch; display: flex; flex-direction: column; gap: 4px">
+        <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 28px">Springer-Feld</h2>
+        <span style="color: #9AA39E">Kategorie für beide Springer.</span>
+      </div>
+      <div style="position: relative; width: 280px; height: 280px">
+        <svg width="280" height="280" viewBox="0 0 280 280" role="img" aria-label="Rad für das Springer-Feld, gelost Ballmagnet">
+          <sc-for list="{{kSeg}}" as="s" hint-placeholder-count="10">
+            <path d="{{s.d}}" fill="{{s.fill}}" stroke="#0B0D0C" stroke-width="2"></path>
+            <text x="{{s.tx}}" y="{{s.ty}}" text-anchor="middle" dominant-baseline="middle" transform="{{s.rot}}" font-family="Inter, sans-serif" font-weight="600" font-size="11" fill="{{s.tc}}">{{s.l}}</text>
+          </sc-for>
+          <circle cx="140" cy="140" r="26" fill="#0B0D0C" stroke="#2A312E" stroke-width="2"></circle>
+        </svg>
+        <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true" style="position: absolute; right: -18px; top: 126px"><path d="M2 14 L26 2 L26 26 Z" fill="#ECEFED"></path></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 2px">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 40px; line-height: 1">Ballmagnet</span>
+        <span style="color: #9AA39E; font-size: 13px">+1 ab 75 · +2 ab 110 Ballkontakten · automatisch über Sofascore</span>
+      </div>
+      <button type="button" style="font: inherit; font-weight: 600; color: #0B0D0C; background: #ECEFED; border: 0; border-radius: 10px; padding: 12px 20px; cursor: pointer">Rad drehen</button>
+    </section>
+  </div>
+
+  <div style="display: flex; justify-content: flex-end; padding: 0 32px 40px; max-width: 1600px; margin: 0 auto; box-sizing: border-box">
+    <a href="Draft.dc.html" style="text-decoration: none; font-weight: 600; color: #FFFFFF; background: #1D9053; border-radius: 10px; padding: 14px 22px">Thesen-Draft starten</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1040}}'>
+class Component extends DCLogic {
+  wheel(labels, winIdx, fills, r, labelR, rotate) {
+    const n = labels.length, cx = 140, cy = 140, step = 2 * Math.PI / n;
+    const off = -winIdx * step - step / 2;
+    return labels.map((l, i) => {
+      const a0 = off + i * step, a1 = a0 + step, am = a0 + step / 2;
+      const p = (a) => (cx + r * Math.cos(a)).toFixed(1) + ' ' + (cy + r * Math.sin(a)).toFixed(1);
+      const tx = cx + labelR * Math.cos(am), ty = cy + labelR * Math.sin(am);
+      const win = i === winIdx;
+      return {
+        l, d: 'M ' + cx + ' ' + cy + ' L ' + p(a0) + ' A ' + r + ' ' + r + ' 0 0 1 ' + p(a1) + ' Z',
+        fill: win ? '#ECEFED' : fills[i % fills.length], tc: win ? '#0B0D0C' : '#ECEFED',
+        tx: tx.toFixed(1), ty: ty.toFixed(1),
+        rot: rotate ? 'rotate(' + (am * 180 / Math.PI).toFixed(1) + ' ' + tx.toFixed(1) + ' ' + ty.toFixed(1) + ')' : ''
+      };
+    });
+  }
+  renderVals() {
+    return {
+      qSeg: this.wheel(['±3', '+1', '+2', '+3', '−3'], 0, ['#1F2522', '#262D29'], 136, 92, false),
+      kSeg: this.wheel(['Ballmagnet', 'Raumdeuter', 'Alleingang', 'Gefahrensucher', 'Schallmauer', 'Zweikämpfer', 'Türsteher', 'Dauerfeuer', 'Bollwerk', 'Laser'], 0, ['#1F2522', '#262D29'], 136, 86, true)
+    };
+  }
+}
+</script>
+</body>
+</html>

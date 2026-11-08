@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Rasenschach Saisonübersicht</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0D0C}
+a{color:#3DD68C}a:hover{color:#7BE8B0}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #0B0D0C; color: #ECEFED; font-family: Inter, system-ui, sans-serif; font-size: 14px">
+
+  <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 32px; border-bottom: 1px solid #222826">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ECEFED" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21h12M7 18h10l-1-8H8l-1 8zM7 10V5h2v2h2V5h2v2h2V5h2v5"/></svg>
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: 0.04em">RASENSCHACH</span>
+      <span style="font-size: 12px; color: #9AA39E; border: 1px solid #2A312E; border-radius: 999px; padding: 4px 10px">Saison 2026/27</span>
+    </div>
+    <nav style="display: flex; flex-wrap: wrap; gap: 4px" aria-label="Hauptnavigation">
+      <a href="#" style="text-decoration: none; color: #ECEFED; background: #1A1F1C; padding: 10px 14px; border-radius: 10px; font-weight: 600">Saison</a>
+      <a href="Main.dc.html" style="text-decoration: none; color: #9AA39E; padding: 10px 14px; border-radius: 10px">Spieltag</a>
+      <a href="Stats.dc.html" style="text-decoration: none; color: #9AA39E; padding: 10px 14px; border-radius: 10px">Statistik</a>
+      <a href="#" style="text-decoration: none; color: #9AA39E; padding: 10px 14px; border-radius: 10px">Archiv</a>
+    </nav>
+  </header>
+
+  <div style="padding: 24px 32px 40px; max-width: 1600px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 40px">Saisonübersicht</h1>
+        <span style="color: #9AA39E">9 Spieltage gewertet · Bent 112 · Björn 104</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #9AA39E">Saison
+          <select style="font: inherit; font-size: 14px; color: #ECEFED; background: #141816; border: 1px solid #2A312E; border-radius: 10px; padding: 10px 12px">
+            <option>2026/27</option>
+          </select>
+        </label>
+        <a href="Prep.dc.html" style="text-decoration: none; font-weight: 600; color: #FFFFFF; background: #1D9053; border-radius: 10px; padding: 12px 16px">Spieltag 10 fortsetzen</a>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px">
+      <sc-for list="{{days}}" as="d" hint-placeholder-count="34">
+        <div style="background: {{d.bg}}; border: {{d.border}}; border-radius: 14px; padding: 14px; min-height: 108px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px">
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px; color: {{d.tc}}">ST {{d.n}}</span>
+            <span style="font-size: 11px; font-weight: 600; color: {{d.sc}}">{{d.s}}</span>
+          </div>
+          <sc-if value="{{d.played}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <div style="display: flex; justify-content: space-between; font-size: 13px"><span style="color: #3DD68C; font-weight: {{d.bw}}">Bent</span><span style="font-weight: 700">+{{d.b}}</span></div>
+              <div style="display: flex; justify-content: space-between; font-size: 13px"><span style="color: #FF6B84; font-weight: {{d.jw}}">Björn</span><span style="font-weight: 700">+{{d.j}}</span></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{d.notPlayed}}" hint-placeholder-val="{{ false }}">
+            <span style="font-size: 12px; color: #6F7873">{{d.hint}}</span>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="background: #141816; border: 1px solid #222826; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 6px">
+      <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 24px">Vergangene Saisons</h2>
+      <span style="color: #9AA39E">Noch keine abgeschlossene Saison. Nach dem 34. Spieltag landet 2026/27 hier im Archiv.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1040}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const b = [14, 9, 17, 6, 12, 15, 11, 13, 15];
+    const j = [10, 16, 8, 12, 14, 9, 13, 14, 8];
+    const days = [];
+    for (let i = 1; i <= 34; i++) {
+      const n = String(i).padStart(2, '0');
+      if (i <= 9) {
+        const bw = b[i - 1] > j[i - 1];
+        days.push({ n, played: true, notPlayed: false, b: b[i - 1], j: j[i - 1], s: bw ? 'SIEG BENT' : 'SIEG BJÖRN', sc: bw ? '#3DD68C' : '#FF6B84',
+          bw: bw ? 700 : 400, jw: bw ? 400 : 700, bg: '#141816', border: '1px solid #222826', tc: '#ECEFED' });
+      } else if (i === 10) {
+        days.push({ n, played: false, notPlayed: true, hint: 'Thesen-Draft läuft · Bent am Zug', s: 'LIVE', sc: '#F2A93B',
+          bg: '#1A1F1C', border: '2px solid #F2A93B', tc: '#ECEFED' });
+      } else {
+        days.push({ n, played: false, notPlayed: true, hint: 'noch nicht aktiv', s: '', sc: '#6F7873',
+          bg: '#0F1211', border: '1px solid #1C211F', tc: '#6F7873' });
+      }
+    }
+    return { days };
+  }
+}
+</script>
+</body>
+</html>
