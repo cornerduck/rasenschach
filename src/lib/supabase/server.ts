@@ -1,12 +1,15 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 
 /**
  * Supabase-Client für Server-Komponenten, Server Actions und Route Handler.
  * Handelt im Namen des eingeloggten Nutzers, Row Level Security greift.
  */
 export async function createClient() {
+  // Daten immer zur Anfragezeit laden (nie beim Vorrendern), auch Zeitvergleiche wie die Deadline
+  await connection();
   const cookieStore = await cookies();
 
   return createServerClient(

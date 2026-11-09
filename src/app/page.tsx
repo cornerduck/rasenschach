@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { SeasonSelect } from "@/components/SeasonSelect";
@@ -63,9 +64,9 @@ async function SeasonOverview({ searchParams }: { searchParams: PageProps<"/">["
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
           <SeasonSelect seasons={seasons.map((s) => ({ year: s.start_year, name: s.name }))} current={season.start_year} />
           {next !== null && (
-            <span className="btn btn-bent" aria-disabled="true" title="Die Spieltagsseite folgt als Nächstes">
+            <Link className="btn btn-bent" href={`/spieltag/${next}`}>
               Spieltag {next} fortsetzen
-            </span>
+            </Link>
           )}
         </div>
       </div>
