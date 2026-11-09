@@ -120,6 +120,8 @@ create table public.matches (
   home_club_id bigint not null references public.clubs (id),
   away_club_id bigint not null references public.clubs (id),
   kickoff timestamptz not null,
+  -- Erster angesetzter Anstoß; bleibt bei Verlegungen stehen, damit sich die Deadline nicht verschiebt
+  original_kickoff timestamptz,
   is_finished boolean not null default false,
   home_goals_ht int, away_goals_ht int,
   home_goals int, away_goals int,
@@ -149,11 +151,66 @@ create table public.goals (
 create index goals_match on public.goals (match_id);
 create index goals_player on public.goals (player_id);
 
--- Deadline = erster Anstoß des Spieltags
+create function public.set_original_kickoff()
+returns trigger language plpgsql set search_path = '' as $$
+begin
+  if tg_op = 'INSERT' then
+    new.original_kickoff := coalesce(new.original_kickoff, new.kickoff);
+  else
+    new.original_kickoff := coalesce(old.original_kickoff, new.original_kickoff, new.kickoff);
+  end if;
+  return new;
+end;
+$$;
+create trigger matches_original_kickoff before insert or update on public.matches
+for each row execute function public.set_original_kickoff();
+
+-- Deadline = erster Anstoß des Spieltags. Ein verlegtes Spiel zählt mit seinem ursprünglichen
+-- Termin, damit sich die Deadline durch eine Verlegung nie nach hinten verschiebt.
 create function public.matchday_deadline(p_matchday_id bigint)
 returns timestamptz language sql stable as $$
-  select min(kickoff) from public.matches where matchday_id = p_matchday_id
+  select min(least(kickoff, coalesce(original_kickoff, kickoff)))
+  from public.matches where matchday_id = p_matchday_id
 $$;
+
+-- Spieltag erst abschließen, wenn alle Spiele (inkl. Nachholspiele) beendet und alle
+-- gesetzten Thesen aufgelöst und von beiden bestätigt sind
+create function public.guard_matchday_close()
+returns trigger language plpgsql set search_path = '' as $$
+begin
+  if new.closed_at is not null and old.closed_at is null then
+    if not exists (select 1 from public.matches where matchday_id = new.id) then
+      raise exception 'Spieltag hat keine Spiele';
+    end if;
+    if exists (select 1 from public.matches where matchday_id = new.id and not is_finished) then
+      raise exception 'Noch nicht alle Spiele gespielt (Nachholspiel abwarten)';
+    end if;
+    if exists (
+      select 1 from public.thesis_picks tp join public.theses t on t.id = tp.thesis_id
+      where tp.matchday_id = new.id
+        and (t.outcome is null or not t.confirmed_bent or not t.confirmed_bjoern)
+    ) then
+      raise exception 'Noch nicht alle Thesen von beiden bestätigt';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+create trigger matchdays_guard_close before update of closed_at on public.matchdays
+for each row execute function public.guard_matchday_close();
+
+-- Archiv: archivierte Saisons können nicht gelöscht werden
+create function public.guard_season_delete()
+returns trigger language plpgsql set search_path = '' as $$
+begin
+  if old.is_archived then
+    raise exception 'Archivierte Saisons können nicht gelöscht werden';
+  end if;
+  return old;
+end;
+$$;
+create trigger seasons_guard_delete before delete on public.seasons
+for each row execute function public.guard_season_delete();
 
 -- ---------------------------------------------------------------------
 -- Thesen
@@ -311,6 +368,9 @@ begin
   select * into v_md from public.matchdays where id = p_matchday_id for update;
   if v_md.id is null then raise exception 'Spieltag nicht gefunden'; end if;
   if v_me is null then raise exception 'Kein Profil für dieses Konto'; end if;
+  if (select is_archived from public.seasons where id = v_md.season_id) then
+    raise exception 'Saison ist archiviert';
+  end if;
   if v_md.thesis_starter is null or v_md.question_value is null or v_md.knight_category is null then
     raise exception 'Spielvorbereitung ist noch nicht abgeschlossen';
   end if;
@@ -357,6 +417,9 @@ begin
   select * into v_md from public.matchdays where id = p_matchday_id for update;
   if v_md.id is null then raise exception 'Spieltag nicht gefunden'; end if;
   if v_me is null then raise exception 'Kein Profil für dieses Konto'; end if;
+  if (select is_archived from public.seasons where id = v_md.season_id) then
+    raise exception 'Saison ist archiviert';
+  end if;
   select * into v_season from public.seasons where id = v_md.season_id;
 
   v_deadline := public.matchday_deadline(p_matchday_id);
