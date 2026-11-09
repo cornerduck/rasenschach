@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { LiveRefresh } from "@/components/LiveRefresh";
@@ -7,6 +6,7 @@ import { MatchdayHeader } from "@/components/MatchdayHeader";
 import { formatKickoff, loadMatchday } from "@/lib/matchday/load";
 import { getMe } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { ResetMatchday } from "@/components/ResetMatchday";
 import { PrepBoard } from "./PrepBoard";
 
 export const metadata: Metadata = { title: "Spielvorbereitung · Rasenschach" };
@@ -28,23 +28,10 @@ async function PrepContent({ params }: { params: PageProps<"/spieltag/[nummer]/v
   if (!ctx) notFound();
   const md = ctx.matchday;
 
-  const ready = [
-    { label: `${ctx.theses.length}/12 Thesen`, done: ctx.theses.length === 12 },
-    { label: "Startspieler", done: !!md.thesisStarter },
-    { label: "?-Feld", done: !!md.questionValue },
-    { label: "Springer-Feld", done: !!md.knightCategory },
-  ];
-
   return (
     <>
       <MatchdayHeader number={number} step="vorbereitung" />
-      <LiveRefresh
-        matchdayId={md.id}
-        tables={[
-          { table: "matchdays", column: "id" },
-          { table: "theses", column: "matchday_id" },
-        ]}
-      />
+      <LiveRefresh matchdayId={md.id} tables={[{ table: "theses", column: "matchday_id" }]} />
       <main className="page">
         <div>
           <h1 className="page-title">Spielvorbereitung</h1>
@@ -56,34 +43,16 @@ async function PrepContent({ params }: { params: PageProps<"/spieltag/[nummer]/v
 
         <PrepBoard
           matchdayId={md.id}
+          number={number}
           questionValue={md.questionValue}
           knightCategory={md.knightCategory}
           thesisStarter={md.thesisStarter}
+          thesesCount={ctx.theses.length}
           open={ctx.prepOpen}
           isAdmin={!!me?.isAdmin}
         />
 
-        <div className="prep-footer">
-          <ul className="ready-list" aria-label="Bereit für den Draft">
-            {ready.map((r) => (
-              <li key={r.label} className={r.done ? "done" : "open"}>
-                {r.done ? "✓" : "○"} {r.label}
-              </li>
-            ))}
-          </ul>
-          {ctx.theses.length < 12 && (
-            <Link className="btn btn-secondary" href={`/spieltag/${number}/thesen`}>
-              Zu den Thesen
-            </Link>
-          )}
-          <span
-            className="btn btn-bent"
-            aria-disabled="true"
-            title={ctx.prepComplete ? "Die Draft-Seite folgt als Nächstes" : "Erst alles vorbereiten"}
-          >
-            Thesen-Draft starten
-          </span>
-        </div>
+        {me?.isAdmin && !md.closedAt && <ResetMatchday matchdayId={md.id} number={number} />}
       </main>
     </>
   );

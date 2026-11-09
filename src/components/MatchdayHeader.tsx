@@ -6,7 +6,7 @@ export type Step = "thesen" | "vorbereitung" | "draft";
 const STEPS: { key: Step; label: string; path: string | null }[] = [
   { key: "thesen", label: "Thesen", path: "thesen" },
   { key: "vorbereitung", label: "Spielvorbereitung", path: "vorbereitung" },
-  { key: "draft", label: "Thesen-Draft", path: null }, // folgt
+  { key: "draft", label: "Thesen-Draft", path: "thesen-draft" },
 ];
 
 /** Kopfzeile für die Spieltagsseiten mit Schrittleiste */

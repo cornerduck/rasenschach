@@ -1,12 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { Wheel, WHEEL_SPIN_MS } from "@/components/Wheel";
 import { KNIGHT_CATEGORIES } from "@/lib/scoring/players";
 import type { KnightCategory, QuestionValue } from "@/lib/scoring/types";
 import { KNIGHT_ORDER, QUESTION_EXPLAIN, QUESTION_LABELS, QUESTION_ORDER, knightExplain } from "@/lib/ui/prep-labels";
-import { resetPrep, setStarter, spinWheel, type ActionResult } from "../actions";
+import { createClient } from "@/lib/supabase/client";
+import { resetPrep, setStarter, spinWheel, type PrepResult, type PrepState } from "../actions";
 
 type Manager = "bent" | "bjoern";
 
@@ -26,34 +27,84 @@ function useReveal(value: string | null) {
   return hidden ? null : value;
 }
 
+/**
+ * Hält den Stand der Vorbereitung selbst und hört per Realtime auf den Spieltag.
+ * So dreht das Rad beim anderen Gerät mit derselben Animation, ohne dass die Seite
+ * neu lädt. Wer die Seite später öffnet, sieht direkt das fertige Ergebnis.
+ */
+function useLivePrep(matchdayId: number, initial: PrepState) {
+  const [state, setState] = useState(initial);
+  // neuer Stand vom Server (z. B. nach Neuladen): übernehmen
+  const [prevInitial, setPrevInitial] = useState(initial);
+  if (
+    initial.questionValue !== prevInitial.questionValue ||
+    initial.knightCategory !== prevInitial.knightCategory ||
+    initial.thesisStarter !== prevInitial.thesisStarter
+  ) {
+    setPrevInitial(initial);
+    setState(initial);
+  }
+
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`vorbereitung-${matchdayId}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "matchdays", filter: `id=eq.${matchdayId}` }, (payload) => {
+        const row = payload.new as { question_value: PrepState["questionValue"]; knight_category: PrepState["knightCategory"]; thesis_starter: PrepState["thesisStarter"] };
+        setState({ questionValue: row.question_value, knightCategory: row.knight_category, thesisStarter: row.thesis_starter });
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [matchdayId]);
+
+  return [state, setState] as const;
+}
+
 export function PrepBoard({
   matchdayId,
-  questionValue,
-  knightCategory,
-  thesisStarter,
+  questionValue: initialQuestion,
+  knightCategory: initialKnight,
+  thesisStarter: initialStarter,
+  thesesCount,
   open,
   isAdmin,
+  number,
 }: {
   matchdayId: number;
   questionValue: QuestionValue | null;
   knightCategory: KnightCategory | null;
   thesisStarter: Manager | null;
+  thesesCount: number;
   open: boolean;
   isAdmin: boolean;
+  number: number;
 }) {
-  const router = useRouter();
+  const [{ questionValue, knightCategory, thesisStarter }, setState] = useLivePrep(matchdayId, {
+    questionValue: initialQuestion,
+    knightCategory: initialKnight,
+    thesisStarter: initialStarter,
+  });
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const qShown = useReveal(questionValue);
   const kShown = useReveal(knightCategory);
 
-  const run = (fn: () => Promise<ActionResult>) =>
+  const run = (fn: () => Promise<PrepResult>) =>
     startTransition(async () => {
       setError(null);
       const res = await fn();
-      if (!res.ok) setError(res.error);
-      router.refresh();
+      if (res.ok) setState(res.state);
+      else setError(res.error);
     });
+
+  const ready = [
+    { label: `${thesesCount}/12 Thesen`, done: thesesCount === 12 },
+    { label: "Startspieler", done: !!thesisStarter },
+    { label: "?-Feld", done: !!questionValue },
+    { label: "Springer-Feld", done: !!knightCategory },
+  ];
 
   const starterButton = (who: Manager) => {
     const name = who === "bent" ? "BENT" : "BJÖRN";
@@ -166,6 +217,30 @@ export function PrepBoard({
             </button>
           )}
         </section>
+      </div>
+
+      <div className="prep-footer">
+        <ul className="ready-list" aria-label="Bereit für den Draft">
+          {ready.map((r) => (
+            <li key={r.label} className={r.done ? "done" : "open"}>
+              {r.done ? "✓" : "○"} {r.label}
+            </li>
+          ))}
+        </ul>
+        {thesesCount < 12 && (
+          <Link className="btn btn-secondary" href={`/spieltag/${number}/thesen`}>
+            Zu den Thesen
+          </Link>
+        )}
+        {ready.every((r) => r.done) ? (
+          <Link className="btn btn-bent" href={`/spieltag/${number}/thesen-draft`}>
+            {open ? "Thesen-Draft starten" : "Zum Thesen-Draft"}
+          </Link>
+        ) : (
+          <span className="btn btn-bent" aria-disabled="true" title="Erst alles vorbereiten">
+            Thesen-Draft starten
+          </span>
+        )}
       </div>
     </>
   );
