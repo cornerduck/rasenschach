@@ -136,6 +136,14 @@ Verglichen wird mit **allen** Bundesligaspielern des Spieltags. Teilen sich mehr
 - Ein Spieltag wird erst abgeschlossen, wenn alle seine Spiele gespielt sind (Nachholspiele abwarten).
 - Abgeschlossene Saisons bleiben mit allen Spieltagen im Archiv gespeichert.
 
+### Festgelegte Auslegungen (bestätigt 09.11.2026)
+
+1. **Geteilter Platz:** Teilen sich zwei Spieler Platz 1, ist der nächste Platz 3 (1, 1, 3), wie in Sporttabellen.
+2. **Springer verfehlt die Mindesteinsatzzeit:** Kategoriepunkte entfallen, der Bonus für Team/Spieler der Woche bleibt.
+3. **Turm zu Null:** zählt nur Gegentore, während er auf dem Platz steht.
+4. **Ligaweite Boni** nur bei einem Wert über 0 (schießt niemand ein Tor, gibt es keinen Bonus „meiste Tore“).
+5. **Fehlende Einsatzminuten** gelten als eingesetzt; „nicht eingesetzt“ (0 Punkte) erst bei ausdrücklich 0 Minuten.
+
 ### Noch offen (mit Bent klären, bis dahin konfigurierbar bauen)
 
 - Zählt ein Spieler, der nicht eingesetzt wurde, trotzdem für das 3er-Limit?

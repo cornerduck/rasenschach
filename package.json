@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "sync:spielplan": "tsx --conditions=react-server --env-file=.env.local scripts/sync-spielplan.mts",
-    "import:kader": "tsx --conditions=react-server --env-file=.env.local scripts/import-kader.mts"
+    "import:kader": "tsx --conditions=react-server --env-file=.env.local scripts/import-kader.mts",
+    "punkte": "tsx --conditions=react-server --env-file=.env.local scripts/punkte.mts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
