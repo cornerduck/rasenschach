@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { LiveRefresh } from "@/components/LiveRefresh";
+import { MatchdayLive } from "@/components/MatchdayLive";
 import { MatchdayHeader } from "@/components/MatchdayHeader";
 import { formatKickoff, loadMatchday, type MatchdayContext } from "@/lib/matchday/load";
 import { getMe } from "@/lib/session";
@@ -39,7 +39,7 @@ async function ThesesContent({ params }: { params: PageProps<"/spieltag/[nummer]
   return (
     <>
       <MatchdayHeader number={number} step="thesen" />
-      <LiveRefresh matchdayId={ctx.matchday.id} tables={[{ table: "theses", column: "matchday_id" }]} />
+      <MatchdayLive matchdayId={ctx.matchday.id} number={number} page="thesen" started={ctx.draftStarted} />
       <main className="page">
         <div>
           <h1 className="page-title">Thesen Spieltag {number}</h1>

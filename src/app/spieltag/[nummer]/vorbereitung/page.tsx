@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { LiveRefresh } from "@/components/LiveRefresh";
+import { MatchdayLive } from "@/components/MatchdayLive";
 import { MatchdayHeader } from "@/components/MatchdayHeader";
 import { formatKickoff, loadMatchday } from "@/lib/matchday/load";
 import { getMe } from "@/lib/session";
@@ -31,7 +31,7 @@ async function PrepContent({ params }: { params: PageProps<"/spieltag/[nummer]/v
   return (
     <>
       <MatchdayHeader number={number} step="vorbereitung" />
-      <LiveRefresh matchdayId={md.id} tables={[{ table: "theses", column: "matchday_id" }]} />
+      <MatchdayLive matchdayId={md.id} number={number} page="vorbereitung" started={ctx.draftStarted} />
       <main className="page">
         <div>
           <h1 className="page-title">Spielvorbereitung</h1>
@@ -50,6 +50,7 @@ async function PrepContent({ params }: { params: PageProps<"/spieltag/[nummer]/v
           thesesCount={ctx.theses.length}
           open={ctx.prepOpen}
           isAdmin={!!me?.isAdmin}
+          draftStarted={ctx.draftStarted}
         />
 
         {me?.isAdmin && !md.closedAt && <ResetMatchday matchdayId={md.id} number={number} />}

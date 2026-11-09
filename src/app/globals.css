@@ -940,6 +940,46 @@ textarea.input {
   background: var(--bjoern-card);
   border: 2px solid var(--bjoern-light);
 }
+/* Drag-and-drop im Thesen-Draft */
+.pool-item:not(:disabled)[draggable="true"] {
+  cursor: grab;
+}
+.pool-item.is-dragging {
+  opacity: 0.45;
+}
+.draft-empty.is-droppable {
+  border-width: 2px;
+}
+.empty-bent.is-drop {
+  background: var(--bent-card);
+  border: 2px solid var(--bent-light);
+  transform: scale(1.02);
+}
+.empty-bjoern.is-drop {
+  background: var(--bjoern-card);
+  border: 2px solid var(--bjoern-light);
+  transform: scale(1.02);
+}
+.draft-empty.has-preview {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 14px;
+  text-align: left;
+  color: var(--text);
+}
+.empty-bent.has-preview .draft-card-tag {
+  color: var(--bent-light);
+}
+.empty-bjoern.has-preview .draft-card-tag {
+  color: var(--bjoern-light);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .draft-empty {
+    transition: transform 120ms ease, background-color 120ms ease;
+  }
+}
 .vs-bar {
   display: flex;
   align-items: stretch;

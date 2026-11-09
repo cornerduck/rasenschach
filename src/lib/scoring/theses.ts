@@ -17,6 +17,9 @@ const QUESTION_POINTS: Record<QuestionValue, { hit: number; miss: number }> = {
   plus_minus_3: { hit: 3, miss: -3 },
 };
 
+/** Reihenfolge der Thesenfelder von links nach rechts, überall gleich (Draft, Spielfeld, Auswertung, Statistik) */
+export const THESIS_FIELD_ORDER: ThesisField[] = ["minus_plus_3", "minus_1", "frage", "plus_1", "plus_minus_3"];
+
 export const THESIS_FIELD_LABELS: Record<ThesisField, string> = {
   plus_minus_3: "+/−3",
   minus_plus_3: "−/+3",

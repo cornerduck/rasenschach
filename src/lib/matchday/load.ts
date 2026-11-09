@@ -41,6 +41,8 @@ export interface MatchdayContext {
     thesisStarter: "bent" | "bjoern" | null;
     closedAt: string | null;
   };
+  /** Thesen-Draft wurde gestartet (oder es gibt schon Züge) */
+  draftStarted: boolean;
   matches: MatchRow[];
   theses: ThesisRow[];
   thesisPickCount: number;
@@ -72,7 +74,7 @@ export async function loadMatchday(db: SupabaseClient, number: number, now = new
 
   const { data: md } = await db
     .from("matchdays")
-    .select("id, number, question_value, knight_category, thesis_starter, closed_at")
+    .select("*")
     .eq("season_id", season.id)
     .eq("number", number)
     .maybeSingle();
@@ -114,6 +116,7 @@ export async function loadMatchday(db: SupabaseClient, number: number, now = new
     matches: rows,
     theses: thesesRows,
     thesisPickCount,
+    draftStarted: !!md.thesis_draft_started_at || thesisPickCount > 0,
     playerPickCount: pp.count ?? 0,
     deadline,
     deadlinePassed,

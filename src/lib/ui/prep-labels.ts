@@ -18,6 +18,15 @@ export const QUESTION_EXPLAIN: Record<QuestionValue, string> = {
   minus_3: "Trifft ein −3 · trifft nicht ein 0",
 };
 
+/** Kurzerklärung unter dem ?-Feld, wie bei den festen Feldern */
+export const QUESTION_SHORT: Record<QuestionValue, string> = {
+  plus_minus_3: "WAHRSCHEINLICH",
+  plus_1: "WAHRSCHEINLICH",
+  plus_2: "WAHRSCHEINLICH",
+  plus_3: "WAHRSCHEINLICH",
+  minus_3: "UNWAHRSCHEINLICH",
+};
+
 /** Reihenfolge der Kategorien auf dem Springer-Rad (wie im Entwurf) */
 export const KNIGHT_ORDER: KnightCategory[] = [
   "ballmagnet",

@@ -64,3 +64,12 @@ export async function makeThesisPick(
 ): Promise<ActionResult> {
   return rpc("make_thesis_pick", { p_matchday_id: matchdayId, p_field: field, p_thesis_id: thesisId });
 }
+
+/** Thesen-Draft starten (wenn alles vorbereitet ist). Alle offenen Seiten wechseln dann live in den Draft. */
+export async function startThesisDraft(matchdayId: number): Promise<ActionResult> {
+  const res = await rpc("start_thesis_draft", { p_matchday_id: matchdayId });
+  if (!res.ok && /start_thesis_draft/.test(res.error)) {
+    return { ok: false, error: "Die Datenbank kennt „Draft starten“ noch nicht. Bitte zuerst die neue Migration ausführen." };
+  }
+  return res;
+}

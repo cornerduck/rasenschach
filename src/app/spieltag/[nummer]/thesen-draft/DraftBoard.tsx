@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useMemo, useState, useTransition, type DragEvent } from "react";
 import { picksInARow, snakeTurn } from "@/lib/scoring/assemble";
+import { THESIS_FIELD_ORDER } from "@/lib/scoring/theses";
 import type { QuestionValue, ThesisField } from "@/lib/scoring/types";
 import { createClient } from "@/lib/supabase/client";
-import { QUESTION_LABELS } from "@/lib/ui/prep-labels";
+import { useRealtime } from "@/lib/supabase/realtime";
+import { QUESTION_LABELS, QUESTION_SHORT } from "@/lib/ui/prep-labels";
 import { makeThesisPick } from "../actions";
 
 type Manager = "bent" | "bjoern";
@@ -25,7 +26,7 @@ export interface DraftPick {
   thesisId: number;
 }
 
-const FIELDS: ThesisField[] = ["plus_minus_3", "minus_plus_3", "plus_1", "minus_1", "frage"];
+const FIELDS = THESIS_FIELD_ORDER;
 const FIELD_HEAD: Record<ThesisField, { v: string; l: string }> = {
   plus_minus_3: { v: "+/−3", l: "WAHRSCHEINLICH" },
   minus_plus_3: { v: "−/+3", l: "UNWAHRSCHEINLICH" },
@@ -54,12 +55,13 @@ export function DraftBoard({
   initialPicks: DraftPick[];
   locked: boolean;
 }) {
-  const router = useRouter();
   const [picks, setPicks] = useState<DraftPick[]>(initialPicks);
   const [selThesis, setSelThesis] = useState<number | null>(null);
   const [selField, setSelField] = useState<ThesisField | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [dragging, setDragging] = useState<number | null>(null);
+  const [dropTarget, setDropTarget] = useState<ThesisField | null>(null);
 
   const addPicks = useCallback((list: DraftPick[]) => {
     setPicks((prev) => {
@@ -69,33 +71,21 @@ export function DraftBoard({
     });
   }, []);
 
-  // Live: neue Züge per Realtime; beim (Wieder-)Verbinden einmal komplett nachladen
-  useEffect(() => {
-    const supabase = createClient();
-    const load = async () => {
-      const { data } = await supabase.from("thesis_picks").select("pick_no, manager, field, thesis_id").eq("matchday_id", matchdayId);
-      if (data) setPicks(data.map((p) => ({ pickNo: p.pick_no, manager: p.manager, field: p.field, thesisId: p.thesis_id })).sort((a, b) => a.pickNo - b.pickNo));
-    };
-    const channel = supabase
-      .channel(`thesen-draft-${matchdayId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "thesis_picks", filter: `matchday_id=eq.${matchdayId}` }, (payload) => {
-        const p = payload.new as { pick_no: number; manager: Manager; field: ThesisField; thesis_id: number };
-        addPicks([{ pickNo: p.pick_no, manager: p.manager, field: p.field, thesisId: p.thesis_id }]);
-      })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "matchdays", filter: `id=eq.${matchdayId}` }, (payload) => {
-        // Admin hat den Spieltag zurückgesetzt
-        if ((payload.new as { thesis_starter: Manager | null }).thesis_starter === null) router.push(`/spieltag/${number}`);
-      })
-      .subscribe((status) => {
-        if (status === "SUBSCRIBED") load();
-      });
-    const onVisible = () => document.visibilityState === "visible" && load();
-    document.addEventListener("visibilitychange", onVisible);
-    return () => {
-      document.removeEventListener("visibilitychange", onVisible);
-      supabase.removeChannel(channel);
-    };
-  }, [matchdayId, number, router, addPicks]);
+  // Live: neue Züge per Realtime; beim (Wieder-)Verbinden einmal komplett nachladen.
+  // Neu laden der Seite und Zurücksetzen erledigt MatchdayLive.
+  const loadPicks = useCallback(async () => {
+    const { data } = await createClient().from("thesis_picks").select("pick_no, manager, field, thesis_id").eq("matchday_id", matchdayId);
+    if (data) setPicks(data.map((p) => ({ pickNo: p.pick_no, manager: p.manager, field: p.field, thesisId: p.thesis_id })).sort((a, b) => a.pickNo - b.pickNo));
+  }, [matchdayId]);
+  useRealtime(
+    `thesen-draft-${matchdayId}`,
+    [{ table: "thesis_picks", event: "INSERT", filter: `matchday_id=eq.${matchdayId}` }],
+    (_table, payload) => {
+      const p = payload.new as { pick_no: number; manager: Manager; field: ThesisField; thesis_id: number };
+      addPicks([{ pickNo: p.pick_no, manager: p.manager, field: p.field, thesisId: p.thesis_id }]);
+    },
+    loadPicks,
+  );
 
   const next = picks.length + 1;
   const done = picks.length >= 10;
@@ -111,6 +101,7 @@ export function DraftBoard({
     if (selThesis === null || selField === null) return;
     const thesisId = selThesis;
     const field = selField;
+    if (!myTurn || usedTheses.has(thesisId) || slot(me!, field)) return;
     startTransition(async () => {
       setError(null);
       const res = await makeThesisPick(matchdayId, field, thesisId);
@@ -122,7 +113,40 @@ export function DraftBoard({
     });
   };
 
-  const fieldHead = (f: ThesisField) => (f === "frage" ? `? = ${QUESTION_LABELS[questionValue]}` : FIELD_HEAD[f].v);
+  // ?-Feld zeigt direkt den ausgelosten Wert dieses Spieltags
+  const fieldHead = (f: ThesisField) => (f === "frage" ? QUESTION_LABELS[questionValue] : FIELD_HEAD[f].v);
+  const fieldShort = (f: ThesisField) => (f === "frage" ? QUESTION_SHORT[questionValue] : FIELD_HEAD[f].l);
+
+  // Drag-and-drop: These aus dem Pool auf ein freies eigenes Feld ziehen (danach bestätigen)
+  const onDragStart = (e: DragEvent, id: number) => {
+    e.dataTransfer.setData("text/plain", String(id));
+    e.dataTransfer.effectAllowed = "move";
+    setDragging(id);
+    setSelThesis(id);
+  };
+  const onDragEnd = () => {
+    setDragging(null);
+    setDropTarget(null);
+  };
+  const dropProps = (f: ThesisField) => ({
+    onDragOver: (e: DragEvent) => {
+      if (dragging === null) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      if (dropTarget !== f) setDropTarget(f);
+    },
+    onDragLeave: () => setDropTarget((t) => (t === f ? null : t)),
+    onDrop: (e: DragEvent) => {
+      e.preventDefault();
+      const id = Number(e.dataTransfer.getData("text/plain")) || dragging;
+      setDragging(null);
+      setDropTarget(null);
+      if (id) {
+        setSelThesis(id);
+        setSelField(f);
+      }
+    },
+  });
 
   const row = (m: Manager) => (
     <div className="draft-row">
@@ -138,18 +162,27 @@ export function DraftBoard({
           );
         }
         if (m === me && myTurn) {
+          const preview = selField === f && selThesis !== null ? thesisById.get(selThesis) : null;
           return (
             <button
               key={f}
               type="button"
-              className={`draft-empty empty-${m} is-mine ${selField === f ? "is-selected" : ""}`}
-              aria-label={`Feld ${FIELD_HEAD[f].v} wählen`}
+              className={`draft-empty empty-${m} is-mine ${selField === f ? "is-selected" : ""} ${dragging !== null ? "is-droppable" : ""} ${dropTarget === f ? "is-drop" : ""} ${preview ? "has-preview" : ""}`}
+              aria-label={`Feld ${fieldHead(f)} wählen`}
               aria-pressed={selField === f}
               onClick={() => setSelField(selField === f ? null : f)}
+              {...dropProps(f)}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <path d="M12 5v14M5 12h14" />
-              </svg>
+              {preview ? (
+                <>
+                  <span className="draft-card-tag">{preview.label}</span>
+                  <span className="draft-card-text">{preview.text}</span>
+                </>
+              ) : (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              )}
             </button>
           );
         }
@@ -196,7 +229,7 @@ export function DraftBoard({
                 {FIELDS.map((f) => (
                   <div key={f} className="draft-head">
                     <span className="draft-head-v">{fieldHead(f)}</span>
-                    <span className="label-small muted">{FIELD_HEAD[f].l}</span>
+                    <span className="label-small muted">{fieldShort(f)}</span>
                   </div>
                 ))}
               </div>
@@ -219,7 +252,7 @@ export function DraftBoard({
           {myTurn && (
             <div className="place-bar">
               <span>
-                {selThesis === null && selField === null && "These im Pool und ein freies Feld wählen."}
+                {selThesis === null && selField === null && "These aus dem Pool auf ein freies Feld ziehen oder antippen."}
                 {selThesis !== null && selField === null && "Jetzt ein freies Feld wählen."}
                 {selThesis === null && selField !== null && "Jetzt eine These im Pool wählen."}
                 {selThesis !== null && selField !== null && (
@@ -254,7 +287,7 @@ export function DraftBoard({
             </div>
           ) : (
             <span className="muted" style={{ fontSize: 12 }}>
-              {me ? `These im Pool auswählen und auf ein freies Feld setzen. ${NAME[me === "bent" ? "bjoern" : "bent"]} sieht deine Züge live.` : "Nur Bent und Björn können setzen."}
+              {me ? `These aus dem Pool auf ein freies Feld ziehen, oder These antippen und dann das Feld. ${NAME[me === "bent" ? "bjoern" : "bent"]} sieht deine Züge live.` : "Nur Bent und Björn können setzen."}
             </span>
           )}
         </div>
@@ -270,8 +303,11 @@ export function DraftBoard({
             <button
               key={t.id}
               type="button"
-              className={`pool-item ${selThesis === t.id ? `is-selected sel-${me}` : ""}`}
+              className={`pool-item ${selThesis === t.id ? `is-selected sel-${me}` : ""} ${dragging === t.id ? "is-dragging" : ""}`}
               disabled={!myTurn}
+              draggable={myTurn}
+              onDragStart={(e) => onDragStart(e, t.id)}
+              onDragEnd={onDragEnd}
               aria-pressed={selThesis === t.id}
               onClick={() => setSelThesis(selThesis === t.id ? null : t.id)}
             >

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { MatchdayHeader } from "@/components/MatchdayHeader";
+import { MatchdayLive } from "@/components/MatchdayLive";
+import { StartDraftButton } from "@/components/StartDraftButton";
 import { ResetMatchday } from "@/components/ResetMatchday";
 import { formatKickoff, loadMatchday } from "@/lib/matchday/load";
 import { getMe } from "@/lib/session";
@@ -28,19 +30,27 @@ async function DraftContent({ params }: { params: PageProps<"/spieltag/[nummer]/
   if (!ctx) notFound();
   const md = ctx.matchday;
 
-  if (!ctx.prepComplete || !md.thesisStarter || !md.questionValue) {
+  if (!ctx.prepComplete || !md.thesisStarter || !md.questionValue || !ctx.draftStarted) {
+    const ready = ctx.prepComplete && !ctx.deadlinePassed && !md.closedAt;
     return (
       <>
         <MatchdayHeader number={number} step="draft" />
+        {/* wechselt live in den Draft, sobald der andere startet */}
+        <MatchdayLive matchdayId={md.id} number={number} page="vorbereitung" />
         <main className="page">
           <div className="panel" style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-start" }}>
-            <h1 className="panel-title">Noch nicht bereit</h1>
+            <h1 className="panel-title">{ready ? "Thesen-Draft noch nicht gestartet" : "Noch nicht bereit"}</h1>
             <p className="muted" style={{ margin: 0 }}>
-              Für den Thesen-Draft braucht es 12 Thesen, den Startspieler und beide Räder.
+              {ready
+                ? "Alles ist vorbereitet. Wer startet, nimmt den anderen automatisch mit in den Draft."
+                : "Für den Thesen-Draft braucht es 12 Thesen, den Startspieler und beide Räder."}
             </p>
-            <Link className="btn btn-bent" href={`/spieltag/${number}/vorbereitung`}>
-              Zur Spielvorbereitung
-            </Link>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              <Link className="btn btn-secondary" href={`/spieltag/${number}/vorbereitung`}>
+                Zur Spielvorbereitung
+              </Link>
+              {ready && <StartDraftButton matchdayId={md.id} number={number} />}
+            </div>
           </div>
         </main>
       </>
@@ -59,6 +69,7 @@ async function DraftContent({ params }: { params: PageProps<"/spieltag/[nummer]/
   return (
     <>
       <MatchdayHeader number={number} step="draft" />
+      <MatchdayLive matchdayId={md.id} number={number} page="draft" />
       <main className="page">
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-end", gap: 12 }}>
           <h1 className="page-title">Thesen-Draft</h1>

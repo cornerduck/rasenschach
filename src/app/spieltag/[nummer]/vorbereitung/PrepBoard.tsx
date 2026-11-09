@@ -6,7 +6,8 @@ import { Wheel, WHEEL_SPIN_MS } from "@/components/Wheel";
 import { KNIGHT_CATEGORIES } from "@/lib/scoring/players";
 import type { KnightCategory, QuestionValue } from "@/lib/scoring/types";
 import { KNIGHT_ORDER, QUESTION_EXPLAIN, QUESTION_LABELS, QUESTION_ORDER, knightExplain } from "@/lib/ui/prep-labels";
-import { createClient } from "@/lib/supabase/client";
+import { StartDraftButton } from "@/components/StartDraftButton";
+import { useRealtime } from "@/lib/supabase/realtime";
 import { resetPrep, setStarter, spinWheel, type PrepResult, type PrepState } from "../actions";
 
 type Manager = "bent" | "bjoern";
@@ -45,19 +46,10 @@ function useLivePrep(matchdayId: number, initial: PrepState) {
     setState(initial);
   }
 
-  useEffect(() => {
-    const supabase = createClient();
-    const channel = supabase
-      .channel(`vorbereitung-${matchdayId}`)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "matchdays", filter: `id=eq.${matchdayId}` }, (payload) => {
-        const row = payload.new as { question_value: PrepState["questionValue"]; knight_category: PrepState["knightCategory"]; thesis_starter: PrepState["thesisStarter"] };
-        setState({ questionValue: row.question_value, knightCategory: row.knight_category, thesisStarter: row.thesis_starter });
-      })
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [matchdayId]);
+  useRealtime(`vorbereitung-${matchdayId}`, [{ table: "matchdays", event: "UPDATE", filter: `id=eq.${matchdayId}` }], (_table, payload) => {
+    const row = payload.new as { question_value: PrepState["questionValue"]; knight_category: PrepState["knightCategory"]; thesis_starter: PrepState["thesisStarter"] };
+    setState({ questionValue: row.question_value, knightCategory: row.knight_category, thesisStarter: row.thesis_starter });
+  });
 
   return [state, setState] as const;
 }
@@ -71,6 +63,7 @@ export function PrepBoard({
   open,
   isAdmin,
   number,
+  draftStarted,
 }: {
   matchdayId: number;
   questionValue: QuestionValue | null;
@@ -80,6 +73,7 @@ export function PrepBoard({
   open: boolean;
   isAdmin: boolean;
   number: number;
+  draftStarted: boolean;
 }) {
   const [{ questionValue, knightCategory, thesisStarter }, setState] = useLivePrep(matchdayId, {
     questionValue: initialQuestion,
@@ -232,10 +226,12 @@ export function PrepBoard({
             Zu den Thesen
           </Link>
         )}
-        {ready.every((r) => r.done) ? (
+        {draftStarted ? (
           <Link className="btn btn-bent" href={`/spieltag/${number}/thesen-draft`}>
-            {open ? "Thesen-Draft starten" : "Zum Thesen-Draft"}
+            Zum Thesen-Draft
           </Link>
+        ) : ready.every((r) => r.done) ? (
+          <StartDraftButton matchdayId={matchdayId} number={number} />
         ) : (
           <span className="btn btn-bent" aria-disabled="true" title="Erst alles vorbereiten">
             Thesen-Draft starten

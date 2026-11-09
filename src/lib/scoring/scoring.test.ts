@@ -311,3 +311,10 @@ describe("Spieltag gesamt", () => {
     expect(matchdayWinner(5, 5)).toBeNull();
   });
 });
+
+describe("Reihenfolge der Thesenfelder", () => {
+  it("von links nach rechts: −/+3 · −1 · ? · +1 · +/−3", async () => {
+    const { THESIS_FIELD_ORDER, THESIS_FIELD_LABELS } = await import("./theses");
+    expect(THESIS_FIELD_ORDER.map((f) => THESIS_FIELD_LABELS[f])).toEqual(["−/+3", "−1", "?-Feld", "+1", "+/−3"]);
+  });
+});

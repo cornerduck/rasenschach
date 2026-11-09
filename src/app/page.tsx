@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { SeasonLive } from "@/components/SeasonLive";
 import { AppHeader } from "@/components/AppHeader";
 import { SeasonSelect } from "@/components/SeasonSelect";
 import { getSeasonStandings } from "@/lib/scoring/repository";
@@ -27,7 +28,7 @@ const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : "0");
 async function SeasonOverview({ searchParams }: { searchParams: PageProps<"/">["searchParams"] }) {
   const params = await searchParams;
   const db = await createClient();
-  const { data: seasons, error } = await db.from("seasons").select("start_year, name, is_archived").order("start_year", { ascending: false });
+  const { data: seasons, error } = await db.from("seasons").select("id, start_year, name, is_archived").order("start_year", { ascending: false });
   if (error) return <p className="error-box">Saisons konnten nicht geladen werden: {error.message}</p>;
   if (!seasons?.length) {
     return (
@@ -51,6 +52,7 @@ async function SeasonOverview({ searchParams }: { searchParams: PageProps<"/">["
 
   return (
     <>
+      {!season.is_archived && <SeasonLive seasonId={season.id} />}
       <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <h1 className="page-title">Saisonübersicht</h1>

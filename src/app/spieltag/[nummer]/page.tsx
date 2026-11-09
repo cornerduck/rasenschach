@@ -18,5 +18,5 @@ async function Hub({ params }: { params: PageProps<"/spieltag/[nummer]">["params
   if (!Number.isInteger(number)) notFound();
   const ctx = await loadMatchday(await createClient(), number);
   if (!ctx) notFound();
-  redirect(`/spieltag/${number}/${ctx.theses.length < 12 ? "thesen" : ctx.prepComplete ? "thesen-draft" : "vorbereitung"}`);
+  redirect(`/spieltag/${number}/${ctx.draftStarted ? "thesen-draft" : ctx.theses.length < 12 ? "thesen" : "vorbereitung"}`);
 }
