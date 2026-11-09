@@ -23,6 +23,7 @@ export interface Matchday {
 }
 
 export interface Goal {
+  externalIds: ExternalIds;
   minute: number | null;
   scorerName: string;
   scorerExternalIds: ExternalIds;
@@ -94,6 +95,8 @@ export interface FixtureSource {
   getMatchdays(season: number): Promise<SourceResult<Matchday[]>>;
   getCurrentMatchday(): Promise<SourceResult<Matchday>>;
   getMatches(season: number, matchday: number): Promise<SourceResult<Match[]>>;
+  /** Alle Spiele der Saison in einem Abruf */
+  getSeasonMatches(season: number): Promise<SourceResult<Match[]>>;
 }
 
 /** Quelle für Spielerwerte pro Spiel (später z. B. Sofascore). Liefert Teilmengen von PlayerMatchStats. */

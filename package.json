@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "sync:spielplan": "tsx --conditions=react-server --env-file=.env.local scripts/sync-spielplan.mts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -24,6 +25,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.5",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.1.0"
   }

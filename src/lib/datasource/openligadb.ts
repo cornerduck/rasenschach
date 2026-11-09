@@ -11,7 +11,7 @@ interface OldbTeam { teamId: number; teamName: string; shortName: string; teamIc
 interface OldbGroup { groupName: string; groupOrderID: number }
 interface OldbResult { resultTypeID: number; pointsTeam1: number; pointsTeam2: number }
 interface OldbGoal {
-  matchMinute: number | null; goalGetterID: number; goalGetterName: string | null;
+  goalID: number; matchMinute: number | null; goalGetterID: number; goalGetterName: string | null;
   scoringTeamId?: number | null; isPenalty: boolean | null; isOwnGoal: boolean | null; isOvertime: boolean | null;
 }
 interface OldbMatch {
@@ -45,6 +45,7 @@ function toMatch(m: OldbMatch): Match {
       teamId = (g as unknown as { scoreTeam1: number }).scoreTeam1 > prev.scoreTeam1 ? m.team1.teamId : m.team2.teamId;
     }
     return {
+      externalIds: { openligadb: String(g.goalID) },
       minute: g.matchMinute ?? null,
       scorerName: g.goalGetterName ?? "",
       scorerExternalIds: g.goalGetterID ? { openligadb: String(g.goalGetterID) } : {},
@@ -76,6 +77,16 @@ async function getList<T>(path: string): Promise<SourceResult<T[]>> {
   return ok(r.data as T[]);
 }
 
+async function loadMatches(path: string): Promise<SourceResult<Match[]>> {
+  const r = await getList<OldbMatch>(path);
+  if (!r.ok) return r;
+  try {
+    return ok(r.data.map(toMatch));
+  } catch (e) {
+    return fail(`Spieldaten von OpenLigaDB nicht lesbar: ${e instanceof Error ? e.message : e}`);
+  }
+}
+
 export const openLigaDb: FixtureSource = {
   id: ID,
 
@@ -97,13 +108,11 @@ export const openLigaDb: FixtureSource = {
     return ok(toMatchday(g));
   },
 
-  async getMatches(season, matchday) {
-    const r = await getList<OldbMatch>(`getmatchdata/${LEAGUE}/${season}/${matchday}`);
-    if (!r.ok) return r;
-    try {
-      return ok(r.data.map(toMatch));
-    } catch (e) {
-      return fail(`Spieldaten von OpenLigaDB nicht lesbar: ${e instanceof Error ? e.message : e}`);
-    }
+  getMatches(season, matchday) {
+    return loadMatches(`getmatchdata/${LEAGUE}/${season}/${matchday}`);
+  },
+
+  getSeasonMatches(season) {
+    return loadMatches(`getmatchdata/${LEAGUE}/${season}`);
   },
 };
