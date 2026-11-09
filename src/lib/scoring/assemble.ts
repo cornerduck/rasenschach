@@ -139,6 +139,27 @@ export interface MatchdayResult {
   missingLeagueStats: string[];
   /** Torschützen dieses Spieltags ohne Zuordnung zu einem Spieler */
   unassignedScorers: number;
+  /** Wer im laufenden Draft am Zug ist (null außerhalb der Drafts) */
+  turn: Manager | null;
+  /** Wie viele Züge der aktuelle Zieher noch am Stück hat (1 oder 2) */
+  turnPicks: number;
+  /** Mindestens ein Zug wurde gesetzt (sonst: Spieltag nicht mitgespielt) */
+  played: boolean;
+}
+
+const SNAKE = [1, 2, 2, 1, 1, 2, 2, 1, 1, 2];
+
+/** Wer setzt Zug Nummer n (1–10)? Snake-Reihenfolge 1, 2, 2, 2, 2, 1. */
+export function snakeTurn(first: Manager, pickNo: number): Manager {
+  const other: Manager = first === "bent" ? "bjoern" : "bent";
+  return SNAKE[pickNo - 1] === 1 ? first : other;
+}
+
+/** Wie viele Züge hintereinander hat der Zieher ab Zug n noch? */
+export function picksInARow(pickNo: number): number {
+  let k = 1;
+  while (pickNo - 1 + k < SNAKE.length && SNAKE[pickNo - 1 + k] === SNAKE[pickNo - 1]) k++;
+  return k;
 }
 
 // ---------------------------------------------------------------------------
@@ -339,10 +360,25 @@ export function assembleMatchday(raw: MatchdayRaw, now: Date = new Date()): Matc
     winner = managers.bent.total > managers.bjoern.total ? "bent" : "bjoern";
   }
 
+  let turn: Manager | null = null;
+  let turnPicks = 0;
+  if (raw.thesisStarter && (status === "thesen_draft" || status === "spieler_draft")) {
+    const thesisPhase = status === "thesen_draft";
+    const next = (thesisPhase ? raw.thesisPicks.length : raw.playerPicks.length) + 1;
+    if (next <= 10) {
+      const first: Manager = thesisPhase ? raw.thesisStarter : raw.thesisStarter === "bent" ? "bjoern" : "bent";
+      turn = snakeTurn(first, next);
+      turnPicks = picksInARow(next);
+    }
+  }
+
   return {
     matchdayId: raw.matchdayId,
     number: raw.number,
     status,
+    turn,
+    turnPicks,
+    played: raw.thesisPicks.length + raw.playerPicks.length > 0,
     deadline: deadlineOf(raw.matches),
     bent: managers.bent,
     bjoern: managers.bjoern,

@@ -1,7 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-/** Frischt bei jeder Anfrage die Supabase-Session (Cookies) auf. */
+/** Seiten, die ohne Login erreichbar sind */
+const PUBLIC_PATHS = ["/login"];
+
+/**
+ * Frischt bei jeder Anfrage die Supabase-Session (Cookies) auf und schickt nicht
+ * eingeloggte Besucher zur Login-Seite. API-Routen prüfen selbst und antworten mit 401.
+ */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -25,7 +31,21 @@ export async function updateSession(request: NextRequest) {
   );
 
   // Wichtig: getUser() validiert das Token und löst ggf. die Auffrischung aus.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const path = request.nextUrl.pathname;
+  const isPublic = PUBLIC_PATHS.some((p) => path === p || path.startsWith(p + "/"));
+  if (!user && !isPublic && !path.startsWith("/api/")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.search = "";
+    const redirect = NextResponse.redirect(url);
+    // aufgefrischte Cookies mitgeben
+    response.cookies.getAll().forEach((c) => redirect.cookies.set(c));
+    return redirect;
+  }
 
   return response;
 }

@@ -4,6 +4,8 @@ import {
   computeLeagueRanks,
   deadlineOf,
   matchdayStatus,
+  picksInARow,
+  snakeTurn,
   seasonStandings,
   toPlayerStats,
   type MatchdayRaw,
@@ -248,6 +250,33 @@ describe("Spieltag zusammensetzen", () => {
     );
     expect(running.status).toBe("laeuft");
     expect(running.winner).toBeNull();
+  });
+});
+
+describe("Snake-Reihenfolge und Zug", () => {
+  it("1, 2, 2, 2, 2, 1", () => {
+    expect(Array.from({ length: 10 }, (_, i) => snakeTurn("bent", i + 1))).toEqual(
+      ["bent", "bjoern", "bjoern", "bent", "bent", "bjoern", "bjoern", "bent", "bent", "bjoern"],
+    );
+    expect([1, 2, 3, 4, 10].map(picksInARow)).toEqual([1, 2, 1, 2, 1]);
+  });
+
+  const future = { matches: [{ kickoff: FUTURE, originalKickoff: FUTURE, isFinished: false }] };
+  it("Thesen-Draft: Startspieler beginnt mit 1 These", () => {
+    const r = assembleMatchday(raw({ ...future, thesisStarter: "bjoern" }), NOW);
+    expect([r.turn, r.turnPicks]).toEqual(["bjoern", 1]);
+    const r2 = assembleMatchday(raw({ ...future, thesisStarter: "bjoern", thesisPicks: [tp("bjoern", "plus_1", null, 1)] }), NOW);
+    expect([r2.turn, r2.turnPicks]).toEqual(["bent", 2]);
+  });
+  it("Spieler-Draft: der andere beginnt", () => {
+    const tps = Array.from({ length: 10 }, (_, i) => tp("bent", "plus_1", null, i + 1));
+    const r = assembleMatchday(raw({ ...future, thesisStarter: "bjoern", thesisPicks: tps }), NOW);
+    expect([r.status, r.turn, r.turnPicks]).toEqual(["spieler_draft", "bent", 1]);
+  });
+  it("niemand am Zug nach der Deadline; ohne Züge nicht gespielt", () => {
+    const r = assembleMatchday(raw(), NOW);
+    expect(r.turn).toBeNull();
+    expect(r.played).toBe(false);
   });
 });
 
