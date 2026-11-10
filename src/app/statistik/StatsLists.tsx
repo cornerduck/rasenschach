@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ClubLogo, type ClubLogoData } from "@/components/ClubLogo";
 import type { Piece } from "@/lib/scoring/types";
 import { PIECE_LABEL, PIECE_ORDER } from "@/lib/ui/pieces";
 
@@ -11,6 +12,7 @@ const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : "±0");
 export interface PlayerLabel {
   name: string;
   meta: string; // "ST · FCB"
+  club: ClubLogoData;
 }
 
 export interface PerformanceRow {
@@ -47,7 +49,7 @@ export function BestPerformances({ rows, players }: { rows: PerformanceRow[]; pl
               <span className="rank-main">
                 <span className="rank-name">{p?.name ?? `Spieler #${r.playerId}`}</span>
                 <span className="rank-meta">
-                  {p?.meta} · {PIECE_LABEL[r.piece].charAt(0) + PIECE_LABEL[r.piece].slice(1).toLowerCase()} · ST {String(r.number).padStart(2, "0")}
+                  {p && <ClubLogo club={p.club} size={14} decorative fallback="dot" />} {p?.meta} · {PIECE_LABEL[r.piece].charAt(0) + PIECE_LABEL[r.piece].slice(1).toLowerCase()} · ST {String(r.number).padStart(2, "0")}
                   {r.lines.length ? ` · ${r.lines.join(", ")}` : ""}
                 </span>
               </span>
@@ -98,7 +100,9 @@ export function DraftedPlayers({ rows, players, limit }: { rows: DraftedRow[]; p
                 <tr key={r.playerId}>
                   <th scope="row">
                     <span className="rank-name">{p?.name ?? `Spieler #${r.playerId}`}</span>
-                    <span className="rank-meta">{p?.meta}</span>
+                    <span className="rank-meta">
+                      {p && <ClubLogo club={p.club} size={14} decorative fallback="dot" />} {p?.meta}
+                    </span>
                   </th>
                   <td className="num">{r.total}×</td>
                   <td className="num">{use(r.picks.bent)}</td>

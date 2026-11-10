@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { MatchdayLive } from "@/components/MatchdayLive";
+import { ClubLogo } from "@/components/ClubLogo";
 import { MatchdayHeader } from "@/components/MatchdayHeader";
+import { clubLogo } from "@/lib/ui/club";
 import { formatKickoff, loadMatchday, type MatchdayContext } from "@/lib/matchday/load";
 import { getMe } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -101,7 +103,13 @@ function ThesesReadOnly({ ctx, isAdmin }: { ctx: MatchdayContext; isAdmin: boole
               <li key={t.id}>
                 <span className="thesis-no">{t.sort_order}</span>
                 <span>
-                  {m && <span className="label-small muted" style={{ display: "block" }}>{m.home.code} – {m.away.code}</span>}
+                  {m && (
+                    <span className="label-small muted with-logo" style={{ display: "flex" }}>
+                      <ClubLogo club={clubLogo(m.home)} size={14} decorative fallback="dot" />
+                      {m.home.code} – {m.away.code}
+                      <ClubLogo club={clubLogo(m.away)} size={14} decorative fallback="dot" />
+                    </span>
+                  )}
                   {t.text}
                 </span>
               </li>

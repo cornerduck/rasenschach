@@ -2114,3 +2114,136 @@ a.tile-link:focus-visible {
   min-width: 36px;
   text-align: right;
 }
+
+/* ---------- Vereinslogos ---------- */
+.club-logo {
+  display: inline-block;
+  object-fit: contain;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.club-logo-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0 3px;
+  border-radius: 4px;
+  border: 1px solid;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.with-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.club-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.field-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.club-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  gap: 6px;
+}
+.club-chip {
+  font: inherit;
+  font-size: 12px;
+  color: var(--text);
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-raised);
+  border: 1px solid var(--input);
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.club-chip:hover {
+  border-color: var(--text-muted);
+}
+.club-chip.is-active {
+  border: 2px solid var(--text);
+  background: var(--surface);
+}
+.club-chip-all.is-active {
+  color: var(--bg);
+  background: var(--text);
+  font-weight: 600;
+}
+.player-card-meta .club-logo,
+.player-card-meta .club-logo-fallback {
+  vertical-align: -3px;
+}
+.rank-meta .club-logo,
+.rank-meta .club-logo-fallback,
+.value-who .club-logo,
+.value-who .club-logo-fallback {
+  vertical-align: -3px;
+}
+.club-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 12px;
+}
+.club-admin {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+}
+.club-admin-preview {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 80px;
+}
+.club-admin-info {
+  flex: 1 1 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.logo-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.logo-upload label {
+  cursor: pointer;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.logo-upload label:focus-within {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+.club-logo-dot {
+  display: inline-block;
+  box-sizing: border-box;
+  border-radius: 999px;
+  border: 1.5px solid;
+  vertical-align: middle;
+  flex-shrink: 0;
+}

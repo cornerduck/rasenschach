@@ -8,6 +8,7 @@ import { THESIS_FIELD_ORDER } from "@/lib/scoring/theses";
 import type { ThesisField } from "@/lib/scoring/types";
 import { formatRate, seasonStats, type MatchdayPoints } from "@/lib/stats/season-stats";
 import { createClient } from "@/lib/supabase/server";
+import { clubLogo } from "@/lib/ui/club";
 import { PIECE_LABEL, PIECE_ORDER } from "@/lib/ui/pieces";
 import { BestPerformances, DraftedPlayers, type PlayerLabel } from "./StatsLists";
 
@@ -48,11 +49,12 @@ async function Stats({ searchParams }: { searchParams: PageProps<"/statistik">["
   if (ids.length) {
     const { data } = await db
       .from("squad_memberships")
-      .select("player_id, position, players(full_name), clubs(code)")
+      .select("player_id, position, players(full_name), clubs(code, color_primary, color_secondary, logo_url)")
       .eq("season_id", season.id)
       .in("player_id", ids);
-    for (const r of (data ?? []) as unknown as { player_id: number; position: string; players: { full_name: string }; clubs: { code: string } }[]) {
-      players[r.player_id] = { name: r.players.full_name, meta: `${r.position} · ${r.clubs.code}` };
+    type Row = { player_id: number; position: string; players: { full_name: string }; clubs: { code: string; color_primary: string; color_secondary: string; logo_url: string | null } };
+    for (const r of (data ?? []) as unknown as Row[]) {
+      players[r.player_id] = { name: r.players.full_name, meta: `${r.position} · ${r.clubs.code}`, club: clubLogo(r.clubs) };
     }
   }
 

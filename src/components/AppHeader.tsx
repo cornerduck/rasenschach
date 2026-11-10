@@ -51,6 +51,11 @@ async function UserMenu() {
     <form action={logout} style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: 8 }}>
       <span style={{ color, fontWeight: 600, padding: "0 4px" }}>{me.displayName}</span>
       {me.isAdmin && <span className="chip-admin">ADMIN</span>}
+      {me.isAdmin && (
+        <Link href="/vereine" className="nav-link" style={{ fontSize: 13 }}>
+          Vereine
+        </Link>
+      )}
       <button type="submit" className="btn btn-ghost">
         Abmelden
       </button>

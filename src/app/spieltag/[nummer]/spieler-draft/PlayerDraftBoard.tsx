@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useDeferredValue, useMemo, useState, useTransition, type DragEvent } from "react";
+import { ClubLogo } from "@/components/ClubLogo";
 import { Jersey } from "@/components/Jersey";
 import { normalizeName } from "@/lib/roster/names";
 import { picksInARow, snakeTurn } from "@/lib/scoring/assemble";
@@ -19,6 +20,8 @@ export interface DraftClub {
   name: string;
   primary: string;
   secondary: string;
+  /** Logo im eigenen Speicher, sonst null (dann Kürzel in Vereinsfarbe) */
+  logoUrl: string | null;
 }
 
 export interface DraftPlayer {
@@ -231,7 +234,7 @@ export function PlayerDraftBoard({
         </span>
         <span className="player-card-name">{p.shortName.toUpperCase()}</span>
         <span className={`player-card-meta meta-${owner}`}>
-          {p.position} · {c?.code} · {p.used[owner] + 1}/{limit} genutzt
+          {c && <ClubLogo club={c} size={14} decorative fallback="dot" />} {p.position} · {c?.code} · {p.used[owner] + 1}/{limit} genutzt
         </span>
       </>
     );
@@ -419,17 +422,32 @@ export function PlayerDraftBoard({
               </button>
             ))}
           </div>
-          <label className="field">
-            Verein
-            <select className="input" value={clubFilter ?? ""} onChange={(e) => setClubFilter(e.target.value ? Number(e.target.value) : null)}>
-              <option value="">Alle Vereine</option>
+          <div className="club-filter" role="group" aria-label="Verein">
+            <span className="field-label">Verein</span>
+            <div className="club-filter-grid">
+              <button
+                type="button"
+                className={`club-chip club-chip-all ${clubFilter === null ? "is-active" : ""}`}
+                aria-pressed={clubFilter === null}
+                onClick={() => setClubFilter(null)}
+              >
+                Alle
+              </button>
               {clubs.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name} ({c.code})
-                </option>
+                <button
+                  key={c.id}
+                  type="button"
+                  className={`club-chip ${clubFilter === c.id ? "is-active" : ""}`}
+                  aria-pressed={clubFilter === c.id}
+                  aria-label={c.name}
+                  title={c.name}
+                  onClick={() => setClubFilter(clubFilter === c.id ? null : c.id)}
+                >
+                  <ClubLogo club={c} size={22} decorative />
+                </button>
               ))}
-            </select>
-          </label>
+            </div>
+          </div>
 
           <div className="pp-list">
             {shown.map((p) => {
@@ -453,7 +471,8 @@ export function PlayerDraftBoard({
                   {kit(p, 30, false)}
                   <span className="pp-text">
                     <span className="pp-name">{p.name}</span>
-                    <span className="pp-meta">
+                    <span className="pp-meta with-logo">
+                      {c && <ClubLogo club={c} size={14} decorative fallback="dot" />}
                       {p.position} · {c?.name} · {p.opponent}
                     </span>
                   </span>

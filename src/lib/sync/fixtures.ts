@@ -126,10 +126,16 @@ async function upsertSeason(db: SupabaseClient, season: number): Promise<number>
   return data!.id;
 }
 
-/** Legt fehlende Vereine an; bei bestehenden wird nur das Logo ergänzt, falls leer. Gibt Quell-ID → DB-ID zurück. */
+/**
+ * Legt fehlende Vereine an; bei bestehenden wird nur die Logo-Quelle (Adresse bei der Quelle)
+ * aktualisiert. Angezeigt wird das Logo erst nach `npm run import:logos` aus dem eigenen Speicher.
+ * Gibt Quell-ID → DB-ID zurück.
+ */
 async function upsertClubs(db: SupabaseClient, teams: Team[]): Promise<Map<string, number>> {
-  const { data: existing } = await must(db.from("clubs").select("id, external_ids, logo_url"));
-  const byExt = new Map<string, { id: number; logo_url: string | null }>();
+  const { data: existing } = await must(db.from("clubs").select("*"));
+  // vor der Logo-Migration gibt es logo_source_url noch nicht
+  const hasSource = existing!.length === 0 || "logo_source_url" in existing![0];
+  const byExt = new Map<string, { id: number; logo_url: string | null; logo_source_url?: string | null }>();
   for (const c of existing!) {
     const id = c.external_ids?.[SOURCE];
     if (id) byExt.set(id, c);
@@ -140,7 +146,9 @@ async function upsertClubs(db: SupabaseClient, teams: Team[]): Promise<Map<strin
     const eid = ext(t.externalIds)!;
     const found = byExt.get(eid);
     if (found) {
-      if (!found.logo_url && t.logoUrl) await must(db.from("clubs").update({ logo_url: t.logoUrl }).eq("id", found.id));
+      if (hasSource && t.logoUrl && found.logo_source_url !== t.logoUrl) {
+        await must(db.from("clubs").update({ logo_source_url: t.logoUrl }).eq("id", found.id));
+      }
       result.set(eid, found.id);
       continue;
     }
@@ -152,7 +160,7 @@ async function upsertClubs(db: SupabaseClient, teams: Team[]): Promise<Map<strin
           name: t.name,
           short_name: t.shortName,
           code: d?.code ?? t.shortName.replace(/[^A-Za-zÄÖÜäöü0-9]/g, "").slice(0, 3).toUpperCase(),
-          logo_url: t.logoUrl,
+          ...(hasSource ? { logo_source_url: t.logoUrl } : {}),
           color_primary: d?.primary ?? "#444444",
           color_secondary: d?.secondary ?? "#FFFFFF",
           external_ids: { [SOURCE]: eid },

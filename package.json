@@ -12,6 +12,7 @@
     "sync:spielplan": "tsx --conditions=react-server --env-file=.env.local scripts/sync-spielplan.mts",
     "import:kader": "tsx --conditions=react-server --env-file=.env.local scripts/import-kader.mts",
     "torschuetzen": "tsx --conditions=react-server --env-file=.env.local scripts/torschuetzen.mts",
+    "import:logos": "tsx --conditions=react-server --env-file=.env.local scripts/import-logos.mts",
     "punkte": "tsx --conditions=react-server --env-file=.env.local scripts/punkte.mts"
   },
   "dependencies": {
@@ -28,6 +29,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.5",
+    "sharp": "0.35.5",
     "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.1.0"

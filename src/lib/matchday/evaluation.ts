@@ -2,6 +2,8 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { MatchdayResult } from "@/lib/scoring/assemble";
 import { getSeasonStandings } from "@/lib/scoring/repository";
+import type { ClubLogoData } from "@/components/ClubLogo";
+import { clubLogo } from "@/lib/ui/club";
 import type { Position } from "@/lib/ui/pieces";
 import type { MatchdayContext } from "./load";
 
@@ -11,6 +13,7 @@ export interface EvalClub {
   name: string;
   primary: string;
   secondary: string;
+  logo: ClubLogoData;
 }
 
 export interface EvalPlayer {
@@ -50,11 +53,11 @@ export async function loadEvaluation(db: SupabaseClient, ctx: MatchdayContext): 
       position: Position;
       shirt_number: number | null;
       players: { full_name: string; short_name: string; photo_url: string | null };
-      clubs: { id: number; code: string; short_name: string; color_primary: string; color_secondary: string };
+      clubs: { id: number; code: string; short_name: string; color_primary: string; color_secondary: string; logo_url: string | null };
     };
     const { data, error } = await db
       .from("squad_memberships")
-      .select("player_id, position, shirt_number, players(full_name, short_name, photo_url), clubs(id, code, short_name, color_primary, color_secondary)")
+      .select("player_id, position, shirt_number, players(full_name, short_name, photo_url), clubs(id, code, short_name, color_primary, color_secondary, logo_url)")
       .eq("season_id", ctx.season.id)
       .in("player_id", ids);
     if (error) throw new Error(`Datenbank: ${error.message}`);
@@ -66,7 +69,14 @@ export async function loadEvaluation(db: SupabaseClient, ctx: MatchdayContext): 
         photoUrl: r.players.photo_url,
         position: r.position,
         number: r.shirt_number,
-        club: { id: r.clubs.id, code: r.clubs.code, name: r.clubs.short_name, primary: r.clubs.color_primary, secondary: r.clubs.color_secondary },
+        club: {
+          id: r.clubs.id,
+          code: r.clubs.code,
+          name: r.clubs.short_name,
+          primary: r.clubs.color_primary,
+          secondary: r.clubs.color_secondary,
+          logo: clubLogo(r.clubs),
+        },
       });
     }
   }

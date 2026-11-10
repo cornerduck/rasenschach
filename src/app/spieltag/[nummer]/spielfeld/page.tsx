@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { ClubLogo } from "@/components/ClubLogo";
 import { CloseMatchday } from "@/components/CloseMatchday";
 import { Jersey } from "@/components/Jersey";
 import { MatchdayHeader } from "@/components/MatchdayHeader";
@@ -14,6 +15,7 @@ import { THESIS_FIELD_ORDER, thesisPoints } from "@/lib/scoring/theses";
 import type { QuestionValue, ThesisField } from "@/lib/scoring/types";
 import { getMe } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { clubLogo } from "@/lib/ui/club";
 import { signed } from "@/lib/ui/evaluation";
 import { PIECE_LABEL, PIECE_ORDER } from "@/lib/ui/pieces";
 import { QUESTION_LABELS } from "@/lib/ui/prep-labels";
@@ -69,7 +71,10 @@ async function FieldContent({ params }: { params: PageProps<"/spieltag/[nummer]/
       <div key={key} className={`field-card card-${m}`}>
         <div className="field-card-top">
           <span className={`field-card-tag tag-${m}`}>{PIECE_LABEL[p.piece]}</span>
-          <span className="field-card-meta">{info ? `${info.position ?? ""} · ${info.club?.code ?? ""}` : ""}</span>
+          <span className="field-card-meta with-logo">
+            {info?.club && <ClubLogo club={info.club.logo} size={14} decorative fallback="dot" />}
+            {info ? `${info.position ?? ""} · ${info.club?.code ?? ""}` : ""}
+          </span>
         </div>
         <div className="field-card-player">
           {info && <Kit p={info} />}
@@ -262,12 +267,16 @@ function Fixture({ m, now }: { m: MatchRow; now: number }) {
   const live = !m.is_finished && Date.parse(m.kickoff) <= now;
   return (
     <div className="fixture">
-      <span className="fixture-team">{m.home.code}</span>
+      <span className="fixture-team with-logo">
+        <ClubLogo club={clubLogo(m.home)} size={18} decorative fallback="dot" />
+        {m.home.code}
+      </span>
       <span className={`fixture-score ${live ? "is-live" : ""} ${hasScore ? "" : "is-time"}`} title={live ? "läuft" : undefined}>
         {hasScore ? `${m.home_goals} : ${m.away_goals}` : formatKickoff(m.kickoff)}
       </span>
-      <span className="fixture-team" style={{ textAlign: "right" }}>
+      <span className="fixture-team with-logo" style={{ justifyContent: "flex-end" }}>
         {m.away.code}
+        <ClubLogo club={clubLogo(m.away)} size={18} decorative fallback="dot" />
       </span>
     </div>
   );

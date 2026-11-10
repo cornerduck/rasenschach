@@ -10,6 +10,7 @@ import { formatKickoff, loadMatchday } from "@/lib/matchday/load";
 import type { Piece } from "@/lib/scoring/types";
 import { getMe } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { ownLogoUrl } from "@/lib/ui/club";
 import type { Position } from "@/lib/ui/pieces";
 import { PlayerDraftBoard, type DraftClub, type DraftPlayer, type PlayerPick } from "./PlayerDraftBoard";
 
@@ -73,7 +74,7 @@ async function PlayerDraftContent({ params }: { params: PageProps<"/spieltag/[nu
       .eq("season_id", ctx.season.id)
       .eq("is_active", true)
       .limit(3000),
-    db.from("season_clubs").select("clubs(id, code, short_name, color_primary, color_secondary)").eq("season_id", ctx.season.id),
+    db.from("season_clubs").select("clubs(id, code, short_name, color_primary, color_secondary, logo_url)").eq("season_id", ctx.season.id),
     db.from("player_picks").select("pick_no, manager, piece, player_id").eq("matchday_id", md.id).order("pick_no"),
     // Einsätze an anderen Spieltagen dieser Saison (für das 3er-Limit)
     db
@@ -93,8 +94,8 @@ async function PlayerDraftContent({ params }: { params: PageProps<"/spieltag/[nu
     shirt_number: number | null;
     players: { full_name: string; short_name: string; photo_url: string | null };
   };
-  const clubs: DraftClub[] = ((clubsRes.data ?? []) as unknown as { clubs: { id: number; code: string; short_name: string; color_primary: string; color_secondary: string } }[])
-    .map(({ clubs: c }) => ({ id: c.id, code: c.code, name: c.short_name, primary: c.color_primary, secondary: c.color_secondary }))
+  const clubs: DraftClub[] = ((clubsRes.data ?? []) as unknown as { clubs: { id: number; code: string; short_name: string; color_primary: string; color_secondary: string; logo_url: string | null } }[])
+    .map(({ clubs: c }) => ({ id: c.id, code: c.code, name: c.short_name, primary: c.color_primary, secondary: c.color_secondary, logoUrl: ownLogoUrl(c.logo_url) }))
     .sort((a, b) => a.name.localeCompare(b.name, "de"));
 
   // Gegner dieses Spieltags pro Verein

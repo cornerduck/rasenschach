@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { ClubLogo } from "@/components/ClubLogo";
 import { CloseMatchday } from "@/components/CloseMatchday";
 import { MatchdayHeader } from "@/components/MatchdayHeader";
 import { MatchdayLive } from "@/components/MatchdayLive";
@@ -211,7 +212,8 @@ async function ValuesContent({ params }: { params: PageProps<"/spieltag/[nummer]
                       <div className="value-who">
                         <span className="value-name">{info?.name ?? `Spieler #${p.playerId}`}</span>
                         <span className="muted" style={{ fontSize: 12 }}>
-                          <span style={{ color: `var(--${p.manager}-light)` }}>{NAME[p.manager]}</span> · {PIECE_LABEL[p.piece]} · {info?.position} · {info?.club?.code}
+                          <span style={{ color: `var(--${p.manager}-light)` }}>{NAME[p.manager]}</span> · {PIECE_LABEL[p.piece]} · {info?.position} ·{" "}
+                          {info?.club && <ClubLogo club={info.club.logo} size={14} decorative fallback="dot" />} {info?.club?.code}
                         </span>
                       </div>
                       <div className="value-inputs">
