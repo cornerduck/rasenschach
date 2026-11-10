@@ -55,7 +55,7 @@ console.log("\n✓ Kader gespeichert");
 
 const scorers = await assignScorers(db, plan.seasonId);
 console.log(`✓ ${scorers.assigned} Tore Spielern zugeordnet`);
-show("Torschützen ohne eindeutige Zuordnung (später per Hand)", scorers.open, (o) => `${o.name} (${o.club}, ${o.goals} Tor${o.goals > 1 ? "e" : ""})`, 50);
+show("Torschützen ohne eindeutige Zuordnung (lösen mit npm run torschuetzen -- --alias …)", scorers.open, (o) => `${o.name} (${o.club}, ${o.goals} Tor${o.goals > 1 ? "e" : ""})${o.candidates.length ? ": " + o.candidates.join(", ") : ""}`, 50);
 
 const sync = await syncFixtures(db, season);
 console.log(sync.ok ? "✓" : "✗", "Tor-Messwerte aktualisiert:", sync.message, "\n");

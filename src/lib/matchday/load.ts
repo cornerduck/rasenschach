@@ -43,6 +43,8 @@ export interface MatchdayContext {
   };
   /** Thesen-Draft wurde gestartet (oder es gibt schon Züge) */
   draftStarted: boolean;
+  /** Spieler-Draft wurde gestartet (oder es gibt schon Züge) */
+  playerDraftStarted: boolean;
   matches: MatchRow[];
   theses: ThesisRow[];
   thesisPickCount: number;
@@ -118,6 +120,7 @@ export async function loadMatchday(db: SupabaseClient, number: number, now = new
     thesisPickCount,
     draftStarted: !!md.thesis_draft_started_at || thesisPickCount > 0,
     playerPickCount: pp.count ?? 0,
+    playerDraftStarted: !!md.player_draft_started_at || (pp.count ?? 0) > 0,
     deadline,
     deadlinePassed,
     prepOpen: thesisPickCount === 0 && !deadlinePassed && !md.closed_at,

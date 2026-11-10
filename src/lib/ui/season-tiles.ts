@@ -64,6 +64,8 @@ export function seasonTiles(results: MatchdayResult[]): Tile[] {
       let hint: string;
       if (r.status === "vorbereitung") {
         hint = r.progress.prep < 4 ? `Vorbereitung ${r.progress.prep}/4` : "Vorbereitet · Thesen-Draft starten";
+      } else if (r.status === "spieler_draft" && !r.turn && r.progress.playerPicks === 0) {
+        hint = "Thesen-Draft fertig · Spieler-Draft starten";
       } else if (r.turn) {
         const thesis = r.status === "thesen_draft";
         const picks = thesis ? r.progress.thesisPicks : r.progress.playerPicks;

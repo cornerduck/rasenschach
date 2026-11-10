@@ -78,3 +78,26 @@ export async function startThesisDraft(matchdayId: number): Promise<ActionResult
   }
   return res;
 }
+
+const MIGRATION_HINT = "Die Datenbank kennt den Spieler-Draft noch nicht. Bitte zuerst die neue Migration ausführen.";
+
+/** Spieler-Draft starten (wenn der Thesen-Draft fertig ist). Alle offenen Seiten wechseln dann live in den Draft. */
+export async function startPlayerDraft(matchdayId: number): Promise<ActionResult> {
+  const res = await rpc("start_player_draft", { p_matchday_id: matchdayId });
+  return !res.ok && /start_player_draft/.test(res.error) ? { ok: false, error: MIGRATION_HINT } : res;
+}
+
+/** Einen Spieler im Spieler-Draft setzen (alle Regeln prüft die Datenbank) */
+export async function makePlayerPick(
+  matchdayId: number,
+  piece: "turm" | "laeufer" | "springer" | "dame" | "koenig",
+  playerId: number,
+): Promise<ActionResult> {
+  return rpc("make_player_pick", { p_matchday_id: matchdayId, p_piece: piece, p_player_id: playerId });
+}
+
+/** Admin: nur den Spieler-Draft löschen, der Thesen-Draft bleibt */
+export async function resetPlayerDraft(matchdayId: number): Promise<ActionResult> {
+  const res = await rpc("reset_player_draft", { p_matchday_id: matchdayId });
+  return !res.ok && /reset_player_draft/.test(res.error) ? { ok: false, error: MIGRATION_HINT } : res;
+}

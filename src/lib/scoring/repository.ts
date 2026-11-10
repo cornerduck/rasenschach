@@ -34,6 +34,7 @@ type MdRow = {
   thesis_starter: MatchdayRaw["thesisStarter"];
   closed_at: string | null;
   thesis_draft_started_at?: string | null;
+  player_draft_started_at?: string | null;
   seasons: { rules: MatchdayRaw["rules"] };
 };
 
@@ -107,6 +108,7 @@ async function loadRaw(db: SupabaseClient, mdRows: MdRow[]): Promise<MatchdayRaw
     matches: (matchesBy.get(md.id) ?? []).map((m) => ({ kickoff: m.kickoff, originalKickoff: m.original_kickoff, isFinished: m.is_finished })),
     thesesCount: thesesBy.get(md.id)?.length ?? 0,
     draftStarted: !!md.thesis_draft_started_at,
+    playerDraftStarted: !!md.player_draft_started_at,
     thesisPicks: (tpBy.get(md.id) ?? []).map((t) => ({
       manager: t.manager,
       field: t.field,

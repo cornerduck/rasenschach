@@ -29,6 +29,7 @@ function raw(overrides: Partial<MatchdayRaw> = {}): MatchdayRaw {
     matches: [{ kickoff: PAST, originalKickoff: PAST, isFinished: true }],
     thesesCount: 12,
     draftStarted: true,
+    playerDraftStarted: true,
     thesisPicks: [],
     playerPicks: [],
     stats: [],
@@ -278,6 +279,9 @@ describe("Snake-Reihenfolge und Zug", () => {
     const tps = Array.from({ length: 10 }, (_, i) => tp("bent", "plus_1", null, i + 1));
     const r = assembleMatchday(raw({ ...future, thesisStarter: "bjoern", thesisPicks: tps }), NOW);
     expect([r.status, r.turn, r.turnPicks]).toEqual(["spieler_draft", "bent", 1]);
+    // noch nicht gestartet: niemand am Zug
+    const w = assembleMatchday(raw({ ...future, thesisStarter: "bjoern", thesisPicks: tps, playerDraftStarted: false }), NOW);
+    expect([w.status, w.turn]).toEqual(["spieler_draft", null]);
   });
   it("niemand am Zug nach der Deadline; ohne Züge nicht gespielt", () => {
     const r = assembleMatchday(raw(), NOW);

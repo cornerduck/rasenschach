@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "sync:spielplan": "tsx --conditions=react-server --env-file=.env.local scripts/sync-spielplan.mts",
     "import:kader": "tsx --conditions=react-server --env-file=.env.local scripts/import-kader.mts",
+    "torschuetzen": "tsx --conditions=react-server --env-file=.env.local scripts/torschuetzen.mts",
     "punkte": "tsx --conditions=react-server --env-file=.env.local scripts/punkte.mts"
   },
   "dependencies": {

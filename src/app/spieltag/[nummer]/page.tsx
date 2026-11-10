@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { loadMatchday } from "@/lib/matchday/load";
 import { createClient } from "@/lib/supabase/server";
 
-/** /spieltag/10 → passender Schritt (Thesen, Vorbereitung, später Draft und Spielfeld) */
+/** /spieltag/10 → passender Schritt (Thesen, Vorbereitung, Thesen-Draft, Spieler-Draft) */
 export default function MatchdayHub({ params }: PageProps<"/spieltag/[nummer]">) {
   return (
     <Suspense fallback={null}>
@@ -18,5 +18,12 @@ async function Hub({ params }: { params: PageProps<"/spieltag/[nummer]">["params
   if (!Number.isInteger(number)) notFound();
   const ctx = await loadMatchday(await createClient(), number);
   if (!ctx) notFound();
-  redirect(`/spieltag/${number}/${ctx.draftStarted ? "thesen-draft" : ctx.theses.length < 12 ? "thesen" : "vorbereitung"}`);
+  const step = ctx.playerDraftStarted
+    ? "spieler-draft"
+    : ctx.draftStarted
+      ? "thesen-draft"
+      : ctx.theses.length < 12
+        ? "thesen"
+        : "vorbereitung";
+  redirect(`/spieltag/${number}/${step}`);
 }

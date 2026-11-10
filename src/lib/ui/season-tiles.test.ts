@@ -48,6 +48,12 @@ describe("Saison-Kacheln", () => {
     const [b] = seasonTiles([r(10, { status: "vorbereitung" })]);
     expect(b.hint).toBe("Vorbereitet · Thesen-Draft starten");
   });
+  it("Spieler-Draft wartet auf Start, dann mit Zug", () => {
+    const [a] = seasonTiles([r(10, { status: "spieler_draft", progress: { prep: 4, thesisPicks: 10, playerPicks: 0 } })]);
+    expect(a.hint).toBe("Thesen-Draft fertig · Spieler-Draft starten");
+    const [b] = seasonTiles([r(10, { status: "spieler_draft", turn: "bjoern", turnPicks: 1, progress: { prep: 4, thesisPicks: 10, playerPicks: 0 } })]);
+    expect(b.hint).toBe("Spieler-Draft 0/10 · Björn am Zug");
+  });
   it("spätere Spieltage", () => {
     expect(by(11).kind).toBe("zukunft");
     expect(by(11).hint).toMatch(/^ab /);

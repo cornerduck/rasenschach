@@ -4,25 +4,30 @@ import { useRouter } from "next/navigation";
 import { useRef } from "react";
 import { useRealtime, type RealtimePayload } from "@/lib/supabase/realtime";
 
-type Page = "thesen" | "vorbereitung" | "draft";
+/** "spieler-wartet": Spieler-Draft-Seite, solange der Draft noch nicht gestartet ist */
+type Page = "thesen" | "vorbereitung" | "draft" | "spieler-wartet" | "spieler-draft";
 
 /**
  * Hält eine Spieltag-Seite live: Bei jeder Änderung des anderen (Thesen, Räder,
  * Startspieler, Züge) wird die Seite neu geladen. Startet jemand den Thesen-Draft,
- * wechseln Thesen- und Vorbereitungsseite automatisch in den Draft. Setzt der Admin
- * den Spieltag zurück, geht der Draft zurück an den Anfang.
+ * wechseln Thesen- und Vorbereitungsseite automatisch in den Draft; startet jemand den
+ * Spieler-Draft, wechselt der Thesen-Draft dorthin. Setzt der Admin zurück, geht es
+ * zurück an den passenden Schritt.
  */
 export function MatchdayLive({
   matchdayId,
   number,
   page,
   started = false,
+  playerStarted = false,
 }: {
   matchdayId: number;
   number: number;
   page: Page;
   /** Draft war beim Laden schon gestartet: dann nicht mehr automatisch wechseln */
   started?: boolean;
+  /** Spieler-Draft war beim Laden schon gestartet */
+  playerStarted?: boolean;
 }) {
   const router = useRouter();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -42,12 +47,21 @@ export function MatchdayLive({
     ],
     (table: string, payload: RealtimePayload) => {
       const row = payload.new as Record<string, unknown>;
-      if (page !== "draft") {
+      if (page === "thesen" || page === "vorbereitung") {
         const nowStarted = (table === "matchdays" && !!row.thesis_draft_started_at) || table === "thesis_picks";
         if (nowStarted && !started) return router.push(`/spieltag/${number}/thesen-draft`);
-      } else {
+      } else if (page === "draft") {
         if (table === "matchdays" && !row.thesis_draft_started_at && !row.thesis_starter) return router.push(`/spieltag/${number}`);
+        const playerNow = (table === "matchdays" && !!row.player_draft_started_at) || table === "player_picks";
+        if (playerNow && !playerStarted) return router.push(`/spieltag/${number}/spieler-draft`);
         if (table === "thesis_picks") return; // Züge übernimmt das Draft-Board selbst
+      } else if (page === "spieler-wartet") {
+        const playerNow = (table === "matchdays" && !!row.player_draft_started_at) || table === "player_picks";
+        if (playerNow) return router.push(`/spieltag/${number}/spieler-draft`);
+      } else {
+        // Spieler-Draft zurückgesetzt (oder ganzer Spieltag): zurück zum passenden Schritt
+        if (table === "matchdays" && !row.player_draft_started_at) return router.push(`/spieltag/${number}`);
+        if (table === "player_picks") return; // Züge übernimmt das Draft-Board selbst
       }
       refresh();
     },

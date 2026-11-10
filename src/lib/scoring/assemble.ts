@@ -80,6 +80,8 @@ export interface MatchdayRaw {
   thesesCount: number;
   /** Thesen-Draft wurde gestartet (Knopf „Thesen-Draft starten“) */
   draftStarted: boolean;
+  /** Spieler-Draft wurde gestartet */
+  playerDraftStarted: boolean;
   thesisPicks: RawThesisPick[];
   playerPicks: RawPlayerPick[];
   stats: RawStat[];
@@ -373,7 +375,8 @@ export function assembleMatchday(raw: MatchdayRaw, now: Date = new Date()): Matc
 
   let turn: Manager | null = null;
   let turnPicks = 0;
-  if (raw.thesisStarter && (status === "thesen_draft" || status === "spieler_draft")) {
+  const waitingForPlayerStart = status === "spieler_draft" && !raw.playerDraftStarted && raw.playerPicks.length === 0;
+  if (raw.thesisStarter && (status === "thesen_draft" || status === "spieler_draft") && !waitingForPlayerStart) {
     const thesisPhase = status === "thesen_draft";
     const next = (thesisPhase ? raw.thesisPicks.length : raw.playerPicks.length) + 1;
     if (next <= 10) {

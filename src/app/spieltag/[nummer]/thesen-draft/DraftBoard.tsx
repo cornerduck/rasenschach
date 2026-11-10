@@ -8,6 +8,7 @@ import type { QuestionValue, ThesisField } from "@/lib/scoring/types";
 import { createClient } from "@/lib/supabase/client";
 import { useRealtime } from "@/lib/supabase/realtime";
 import { QUESTION_LABELS, QUESTION_SHORT } from "@/lib/ui/prep-labels";
+import { StartDraftButton } from "@/components/StartDraftButton";
 import { makeThesisPick } from "../actions";
 
 type Manager = "bent" | "bjoern";
@@ -45,6 +46,7 @@ export function DraftBoard({
   theses,
   initialPicks,
   locked,
+  playerDraftStarted,
 }: {
   matchdayId: number;
   number: number;
@@ -54,6 +56,7 @@ export function DraftBoard({
   theses: DraftThesis[];
   initialPicks: DraftPick[];
   locked: boolean;
+  playerDraftStarted: boolean;
 }) {
   const [picks, setPicks] = useState<DraftPick[]>(initialPicks);
   const [selThesis, setSelThesis] = useState<number | null>(null);
@@ -281,9 +284,15 @@ export function DraftBoard({
           {done ? (
             <div className="done-bar">
               <span>Alle 10 Thesen sind gesetzt. Als Nächstes der Spieler-Draft, {NAME[starter === "bent" ? "bjoern" : "bent"]} beginnt.</span>
-              <span className="btn btn-bent" aria-disabled="true" title="Die Seite folgt als Nächstes">
-                Zum Spieler-Draft
-              </span>
+              {playerDraftStarted ? (
+                <Link className={`btn btn-${starter === "bent" ? "bjoern" : "bent"}`} href={`/spieltag/${number}/spieler-draft`}>
+                  Zum Spieler-Draft
+                </Link>
+              ) : locked ? (
+                <span className="muted">Deadline vorbei</span>
+              ) : (
+                <StartDraftButton matchdayId={matchdayId} number={number} kind="spieler" className={`btn btn-${starter === "bent" ? "bjoern" : "bent"}`} />
+              )}
             </div>
           ) : (
             <span className="muted" style={{ fontSize: 12 }}>

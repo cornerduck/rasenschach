@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { fixtureSource, type Match, type Team } from "@/lib/datasource";
+import { assignScorers } from "@/lib/roster/import";
 import { CLUB_DEFAULTS } from "./club-defaults";
 
 /**
@@ -79,7 +80,13 @@ export async function syncFixtures(db: SupabaseClient, season: number): Promise<
     const matchIds = await upsertMatches(db, matches.data, matchdayIds, clubIds);
 
     // 6. Tore und Tor-Messwerte
-    const goalStats = await syncGoals(db, matches.data, matchIds, clubIds, matchdayIds);
+    let goalStats = await syncGoals(db, matches.data, matchIds, clubIds, matchdayIds);
+
+    // 7. Neue Torschützen ohne bekannte Quell-ID per Name im Kader zuordnen, dann Tor-Messwerte neu
+    if (goalStats.unmatched > 0) {
+      const named = await assignScorers(db, seasonId, SOURCE);
+      if (named.assigned > 0) goalStats = await syncGoals(db, matches.data, matchIds, clubIds, matchdayIds);
+    }
 
     const finished = matches.data.filter((m) => m.isFinished).length;
     return finish(

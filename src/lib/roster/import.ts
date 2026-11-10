@@ -1,7 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { RosterRow } from "./csv";
-import { findUniqueScorer, normalizeName } from "./names";
+import { aliasMatches, matchScorer, normalizeName } from "./names";
 
 /**
  * Kader-Import in zwei Schritten: erst planen (zeigt, was sich ändert, schreibt nichts),
@@ -195,16 +195,51 @@ export async function applyRosterImport(db: SupabaseClient, plan: RosterImportPl
   });
 }
 
+export interface OpenScorer {
+  name: string;
+  club: string;
+  goals: number;
+  /** leer = kein passender Spieler im Kader; sonst die möglichen Spieler */
+  candidates: string[];
+}
+
+/** Liest die Kader einer Saison mit festen Zuordnungen (Alias), falls die Spalte schon existiert. */
+async function loadSquadCandidates(db: SupabaseClient, seasonId: number) {
+  type Row = { player_id: number; club_id: number; players: { full_name: string; short_name: string; external_ids: Record<string, string>; aliases?: string[] } };
+  const withAliases = await db
+    .from("squad_memberships")
+    .select("player_id, club_id, players(full_name, short_name, external_ids, aliases)")
+    .eq("season_id", seasonId);
+  const res = withAliases.error
+    ? await must(db.from("squad_memberships").select("player_id, club_id, players(full_name, short_name, external_ids)").eq("season_id", seasonId))
+    : withAliases;
+  type Cand = { playerId: number; fullName: string; shortName: string; aliases: string[]; ext: Record<string, string> };
+  const byClub = new Map<number, Cand[]>();
+  for (const m of res.data as unknown as Row[]) {
+    const list = byClub.get(m.club_id) ?? [];
+    list.push({
+      playerId: m.player_id,
+      fullName: m.players.full_name,
+      shortName: m.players.short_name,
+      aliases: m.players.aliases ?? [],
+      ext: m.players.external_ids ?? {},
+    });
+    byClub.set(m.club_id, list);
+  }
+  return byClub;
+}
+
 /**
- * Ordnet noch nicht zugeordnete Torschützen (OpenLigaDB) Spielern zu: gleicher Verein und
- * eindeutig passender Name. Die Quell-ID wird am Spieler gespeichert, damit künftige Tore
- * automatisch zugeordnet werden. Mehrdeutige Fälle bleiben offen.
+ * Ordnet noch nicht zugeordnete Torschützen (OpenLigaDB) Spielern zu: nur Spieler des Vereins,
+ * für den das Tor zählt, und nur bei genau einem passenden Namen (feste Zuordnungen gehen vor).
+ * Die Quell-ID wird am Spieler gespeichert, damit künftige Tore automatisch zugeordnet werden.
+ * Mehrdeutige Fälle bleiben offen und werden mit den möglichen Spielern gemeldet.
  */
 export async function assignScorers(
   db: SupabaseClient,
   seasonId: number,
   source = "openligadb",
-): Promise<{ assigned: number; open: { name: string; club: string; goals: number }[] }> {
+): Promise<{ assigned: number; open: OpenScorer[] }> {
   const { data: goals } = await must(
     db
       .from("goals")
@@ -215,21 +250,10 @@ export async function assignScorers(
       .eq("matches.matchdays.season_id", seasonId),
   );
 
-  const { data: squad } = await must(
-    db
-      .from("squad_memberships")
-      .select("player_id, club_id, players(full_name, short_name, external_ids)")
-      .eq("season_id", seasonId),
-  );
+  const byClub = await loadSquadCandidates(db, seasonId);
   const { data: clubs } = await must(db.from("clubs").select("id, code"));
   const clubCode = new Map(clubs!.map((c) => [c.id, c.code]));
-  type Cand = { playerId: number; fullName: string; shortName: string; ext: Record<string, string> };
-  const byClub = new Map<number, Cand[]>();
-  for (const m of squad as unknown as { player_id: number; club_id: number; players: { full_name: string; short_name: string; external_ids: Record<string, string> } }[]) {
-    const list = byClub.get(m.club_id) ?? [];
-    list.push({ playerId: m.player_id, fullName: m.players.full_name, shortName: m.players.short_name, ext: m.players.external_ids ?? {} });
-    byClub.set(m.club_id, list);
-  }
+  const label = (c: { fullName: string; playerId: number }) => `${c.fullName} (#${c.playerId})`;
 
   // Pro Torschütze (Quell-ID) einmal entscheiden
   const scorers = new Map<string, { name: string; clubId: number; goalIds: number[] }>();
@@ -242,16 +266,23 @@ export async function assignScorers(
   }
 
   let assigned = 0;
-  const open: { name: string; club: string; goals: number }[] = [];
+  const open: OpenScorer[] = [];
   for (const [key, s] of scorers) {
-    // Kandidaten: Verein, für den das Tor zählt (kein Eigentor). Wechsel innerhalb der Saison: alle Vereine als Rückfall.
-    let hit = findUniqueScorer(s.name, byClub.get(s.clubId) ?? []);
-    if (!hit) hit = findUniqueScorer(s.name, [...byClub.values()].flat());
-    if (!hit || (hit.ext[source] && hit.ext[source] !== key)) {
-      open.push({ name: s.name, club: clubCode.get(s.clubId) ?? "?", goals: s.goalIds.length });
+    const m = matchScorer(s.name, byClub.get(s.clubId) ?? []);
+    const club = clubCode.get(s.clubId) ?? "?";
+    if (m.kind !== "eindeutig") {
+      open.push({ name: s.name.trim(), club, goals: s.goalIds.length, candidates: m.kind === "mehrdeutig" ? m.players.map(label) : [] });
       continue;
     }
-    if (!key.includes("|")) {
+    const hit = m.player;
+    // Spieler hat schon eine andere Quell-ID (die Quelle führt ihn doppelt): ohne feste
+    // Zuordnung nicht raten; mit fester Zuordnung Tore zuordnen, erste ID bleibt am Spieler
+    const otherId = !key.includes("|") && !!hit.ext[source] && hit.ext[source] !== key;
+    if (otherId && !aliasMatches(s.name, hit)) {
+      open.push({ name: s.name.trim(), club, goals: s.goalIds.length, candidates: [`${label(hit)}, hat aber schon eine andere OpenLigaDB-ID`] });
+      continue;
+    }
+    if (!key.includes("|") && !otherId) {
       await must(db.from("players").update({ external_ids: { ...hit.ext, [source]: key } }).eq("id", hit.playerId));
       hit.ext = { ...hit.ext, [source]: key };
     }
@@ -259,4 +290,34 @@ export async function assignScorers(
     assigned += s.goalIds.length;
   }
   return { assigned, open };
+}
+
+/**
+ * Feste Zuordnung speichern: Dieser Name aus der Quelle gehört zu diesem Spieler.
+ * Spieler wird über Name (und optional Verein) im Kader der Saison gesucht.
+ */
+export async function addScorerAlias(
+  db: SupabaseClient,
+  seasonId: number,
+  alias: string,
+  playerQuery: string,
+  clubCode?: string,
+): Promise<{ ok: true; player: string } | { ok: false; error: string }> {
+  const byClub = await loadSquadCandidates(db, seasonId);
+  const { data: clubs } = await must(db.from("clubs").select("id, code"));
+  const club = clubCode ? clubs!.find((c) => c.code.toUpperCase() === clubCode.toUpperCase()) : undefined;
+  if (clubCode && !club) return { ok: false, error: `Verein „${clubCode}“ unbekannt` };
+  const pool = club ? byClub.get(club.id) ?? [] : [...byClub.values()].flat();
+  const asId = /^#?\d+$/.test(playerQuery.trim()) ? Number(playerQuery.replace("#", "")) : null;
+  const q = normalizeName(playerQuery);
+  const hits = asId != null ? pool.filter((p) => p.playerId === asId) : pool.filter((p) => normalizeName(p.fullName) === q || normalizeName(p.shortName) === q);
+  if (hits.length === 0) return { ok: false, error: `Kein Spieler „${playerQuery}“${club ? ` bei ${club.code}` : ""} im Kader gefunden` };
+  if (hits.length > 1) return { ok: false, error: `Mehrere Spieler „${playerQuery}“: ${hits.map((h) => `${h.fullName} (#${h.playerId})`).join(", ")}. Bitte mit --verein oder #Nummer eindeutig machen.` };
+  const p = hits[0];
+  const aliases = [...new Set([...p.aliases, alias.trim()])];
+  const { error } = await db.from("players").update({ aliases }).eq("id", p.playerId);
+  if (error) {
+    return { ok: false, error: /aliases/.test(error.message) ? "Die Datenbank kennt feste Zuordnungen noch nicht. Bitte zuerst die neue Migration ausführen." : error.message };
+  }
+  return { ok: true, player: p.fullName };
 }

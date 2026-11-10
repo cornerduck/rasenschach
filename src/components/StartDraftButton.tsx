@@ -2,29 +2,40 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { startThesisDraft } from "@/app/spieltag/[nummer]/actions";
+import { startPlayerDraft, startThesisDraft } from "@/app/spieltag/[nummer]/actions";
 
-/** Startet den Thesen-Draft. Der andere wird über Realtime automatisch mitgenommen. */
-export function StartDraftButton({ matchdayId, number }: { matchdayId: number; number: number }) {
+/** Startet den Thesen- oder Spieler-Draft. Der andere wird über Realtime automatisch mitgenommen. */
+export function StartDraftButton({
+  matchdayId,
+  number,
+  kind = "thesen",
+  className = "btn btn-bent",
+}: {
+  matchdayId: number;
+  number: number;
+  kind?: "thesen" | "spieler";
+  className?: string;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const label = kind === "thesen" ? "Thesen-Draft" : "Spieler-Draft";
   return (
     <>
       <button
         type="button"
-        className="btn btn-bent"
+        className={className}
         disabled={pending}
         onClick={() =>
           startTransition(async () => {
             setError(null);
-            const res = await startThesisDraft(matchdayId);
-            if (res.ok) router.push(`/spieltag/${number}/thesen-draft`);
+            const res = kind === "thesen" ? await startThesisDraft(matchdayId) : await startPlayerDraft(matchdayId);
+            if (res.ok) router.push(`/spieltag/${number}/${kind === "thesen" ? "thesen-draft" : "spieler-draft"}`);
             else setError(res.error);
           })
         }
       >
-        {pending ? "Starte …" : "Thesen-Draft starten"}
+        {pending ? "Starte …" : `${label} starten`}
       </button>
       {error && (
         <p className="error-box" role="alert" style={{ flexBasis: "100%" }}>

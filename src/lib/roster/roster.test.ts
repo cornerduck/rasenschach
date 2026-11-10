@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseRosterCsv, splitCsv } from "./csv";
-import { findUniqueScorer, normalizeName, scorerMatchesPlayer } from "./names";
+import { findUniqueScorer, matchScorer, normalizeName, scorerMatchesPlayer, unflipName } from "./names";
 
 describe("CSV einlesen", () => {
   it("liest Semikolon-CSV mit allen Spalten", () => {
@@ -99,5 +99,42 @@ describe("Namensabgleich Torschützen", () => {
     expect(findUniqueScorer("F. Nmecha", squad)).toBeNull();
     expect(findUniqueScorer("L. Nmecha", squad)?.fullName).toBe("Lukas Nmecha");
     expect(findUniqueScorer("X. Niemand", squad)).toBeNull();
+  });
+});
+
+describe("Namensabgleich: schwierige Formate", () => {
+  const p = (fullName: string, shortName = fullName.split(" ").at(-1)!, aliases?: string[]) => ({ fullName, shortName, aliases });
+
+  it("Initiale mit mehrteiligem Nachnamen: D. Mokwa", () => {
+    expect(scorerMatchesPlayer("D. Mokwa", p("David Mokwa Ntusu", "Mokwa Ntusu"))).toBe(true);
+    expect(scorerMatchesPlayer("D. Ntusu", p("David Mokwa Ntusu", "Mokwa Ntusu"))).toBe(true);
+    expect(scorerMatchesPlayer("M. Mokwa", p("David Mokwa Ntusu", "Mokwa Ntusu"))).toBe(false);
+  });
+
+  it("„Nachname, Vorname“ mit Leerzeichen", () => {
+    expect(unflipName(" Poulsen, Yussuf")).toBe("Yussuf Poulsen");
+    expect(scorerMatchesPlayer(" Poulsen, Yussuf", p("Yussuf Poulsen"))).toBe(true);
+    expect(scorerMatchesPlayer("Poulsen, Y.", p("Yussuf Poulsen"))).toBe(true);
+  });
+
+  it("vertauschte Reihenfolge und Bindestriche, Groß-/Kleinschreibung", () => {
+    expect(scorerMatchesPlayer("Lee Jae-sung", p("Jae-Sung Lee", "Lee Jae-Sung"))).toBe(true);
+    expect(scorerMatchesPlayer("Lee Jae-sung", p("Jae-Sung Lee", "Lee"))).toBe(true);
+    expect(scorerMatchesPlayer("lee jae–sung", p("Jae-Sung Lee", "Lee"))).toBe(true);
+    expect(scorerMatchesPlayer("Lee Jae-sung", p("Jeffrey Gouweleeuw"))).toBe(false);
+    expect(scorerMatchesPlayer("Kane Harry", p("Harry Kane"))).toBe(true);
+  });
+
+  it("feste Zuordnung (Alias) geht vor", () => {
+    const squad = [p("Felix Nmecha", "Nmecha"), p("Lukas Nmecha", "Nmecha", ["Nmecha, L"])];
+    expect(matchScorer("Nmecha", squad)).toMatchObject({ kind: "mehrdeutig" });
+    expect(matchScorer(" nmecha, l ", squad)).toMatchObject({ kind: "eindeutig", player: { fullName: "Lukas Nmecha" } });
+    expect(matchScorer("Spieler XY", [p("Max Muster", "Muster", ["Spieler XY"])])).toMatchObject({ kind: "eindeutig" });
+  });
+
+  it("mehrere Treffer werden gemeldet, nicht geraten", () => {
+    const r = matchScorer("Müller", [p("Thomas Müller"), p("Florian Müller")]);
+    expect(r.kind).toBe("mehrdeutig");
+    expect(matchScorer("Niemand", [p("Thomas Müller")]).kind).toBe("keiner");
   });
 });

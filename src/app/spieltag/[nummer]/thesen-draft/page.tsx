@@ -69,7 +69,7 @@ async function DraftContent({ params }: { params: PageProps<"/spieltag/[nummer]/
   return (
     <>
       <MatchdayHeader number={number} step="draft" />
-      <MatchdayLive matchdayId={md.id} number={number} page="draft" />
+      <MatchdayLive matchdayId={md.id} number={number} page="draft" playerStarted={ctx.playerDraftStarted} />
       <main className="page">
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-end", gap: 12 }}>
           <h1 className="page-title">Thesen-Draft</h1>
@@ -90,6 +90,7 @@ async function DraftContent({ params }: { params: PageProps<"/spieltag/[nummer]/
           })}
           initialPicks={picks}
           locked={ctx.deadlinePassed || !!md.closedAt}
+          playerDraftStarted={ctx.playerDraftStarted}
         />
         {me?.isAdmin && !md.closedAt && <ResetMatchday matchdayId={md.id} number={number} />}
       </main>
