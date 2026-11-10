@@ -1,6 +1,6 @@
 /**
  * Vereinslogos einmalig von OpenLigaDB holen und im eigenen Speicher ablegen.
- * Jedes Logo wird auf 128 × 128 Pixel verkleinert und als PNG gespeichert
+ * Jedes Logo wird direkt auf 128 × 128 Pixel verkleinert und als PNG gespeichert
  * (auch SVG-Logos, die so keine Skripte mehr enthalten können).
  *
  *   npm run import:logos                 Probelauf: zeigt nur, was passieren würde
@@ -38,6 +38,30 @@ async function download(url: string): Promise<Buffer> {
     if (raw.length > 10 * 1024 * 1024) throw new Error("Datei größer als 10 MB");
     return raw;
   }
+}
+
+/** Zielgröße der gespeicherten Logos (Pixel, quadratisch) */
+const LOGO_SIZE = 128;
+/** Obergrenze für das Quellbild: großzügig für sehr große Logos, aber nicht unbegrenzt */
+const MAX_INPUT_PIXELS = 250_000_000;
+
+/**
+ * Quellbild → PNG in Zielgröße. SVG-Logos werden direkt passend gerendert (etwa 4-fache
+ * Zielgröße für saubere Kanten) statt erst riesig und dann verkleinert; so bleiben auch
+ * sehr groß angelegte SVGs unter der Pixelgrenze.
+ */
+async function toLogoPng(raw: Buffer): Promise<Buffer> {
+  const meta = await sharp(raw, { limitInputPixels: MAX_INPUT_PIXELS }).metadata();
+  let density: number | undefined;
+  if (meta.format === "svg" && meta.width && meta.height) {
+    // Standard sind 72 dpi; so skalieren, dass die längere Seite etwa 4 × LOGO_SIZE wird
+    const scale = (LOGO_SIZE * 4) / Math.max(meta.width, meta.height);
+    density = Math.min(2400, Math.max(1, Math.round(72 * scale)));
+  }
+  return sharp(raw, { limitInputPixels: MAX_INPUT_PIXELS, ...(density ? { density } : {}) })
+    .resize(LOGO_SIZE, LOGO_SIZE, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png()
+    .toBuffer();
 }
 
 const args = process.argv.slice(2);
@@ -92,10 +116,7 @@ for (const c of clubs) {
   try {
     const raw = await download(source);
     // Verkleinern, transparent auffüllen, als PNG speichern
-    const png = await sharp(raw, { density: 300, limitInputPixels: 50_000_000 })
-      .resize(128, 128, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
-      .png()
-      .toBuffer();
+    const png = await toLogoPng(raw);
     const check = checkLogo(png);
     if (!check.ok) throw new Error(check.error);
     await saveClubLogo(db, c, png, check.type, false);
