@@ -59,7 +59,7 @@ Jeder setzt 5 Bundesligaspieler auf seine 5 Spielerfelder, jede Figur genau einm
 | König | Torjäger (Tore) | keine |
 
 - **Pool:** alle Spieler, die bei den 18 Vereinen für die erste Mannschaft gelistet sind (Quelle Sofascore).
-- **Saisonlimit:** Jeder darf einen Spieler höchstens 3-mal pro Saison einsetzen. Das Limit gilt **pro Person**.
+- **Saisonlimit:** Jeder darf einen Spieler höchstens 3-mal pro Saison einsetzen. Das Limit gilt **pro Person**. Jeder gedraftete Spieler zählt mit, auch wenn er nicht eingesetzt wurde (festgelegt am 10.11.2026).
 - **Pro Woche:** Ein Spieler kann an einem Spieltag nur einmal vergeben werden. Setzt Bent ihn, ist er für Björn in dieser Woche gesperrt und umgekehrt.
 - **Reihenfolge:** Snake-Draft wie bei den Thesen (1, 2, 2, 2, 2, 1). Es beginnt, wer den Thesen-Draft **nicht** begonnen hat.
 - **Ohne Einsatz:** Ein Spieler, der nicht eingesetzt wurde, bringt 0 Punkte.
@@ -143,9 +143,9 @@ Verglichen wird mit **allen** Bundesligaspielern des Spieltags. Teilen sich mehr
 3. **Turm zu Null:** zählt nur Gegentore, während er auf dem Platz steht.
 4. **Ligaweite Boni** nur bei einem Wert über 0 (schießt niemand ein Tor, gibt es keinen Bonus „meiste Tore“).
 5. **Fehlende Einsatzminuten** gelten als eingesetzt; „nicht eingesetzt“ (0 Punkte) erst bei ausdrücklich 0 Minuten.
+6. **3er-Limit:** Ein gedrafteter Spieler zählt immer für das Limit, auch ohne Einsatz (bestätigt 10.11.2026).
 
 ### Noch offen (mit Bent klären, bis dahin konfigurierbar bauen)
 
-- Zählt ein Spieler, der nicht eingesetzt wurde, trotzdem für das 3er-Limit?
 - Was gilt bei verpasster Deadline? Vorschlag: leere Felder bringen 0.
 - Springer: Welche Mindesteinsatzzeit bzw. Mindestmenge gilt genau?
