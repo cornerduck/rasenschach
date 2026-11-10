@@ -6,7 +6,7 @@ Stand 08.11.2026. Bent und Björn spielen zu jedem Bundesliga-Spieltag ein Duell
 
 1. **Thesen eintragen:** Bent (Admin) fügt die 12 Thesen von Calcio Berlin ein: 3 Spieltagsthesen und je 1 These pro Spiel (9 Spiele).
 2. **Spielvorbereitung:** Das Rad für das ?-Feld und das Rad für das Springer-Feld werden gedreht. Beide Ergebnisse gelten für beide Spieler.
-3. **Startspieler:** Wird per Schnick Schnack Schnuck entschieden und im Tool eingetragen.
+3. **Startspieler:** Wird per Münzwurf im Tool entschieden (geändert am 10.11.2026, vorher Schnick Schnack Schnuck).
 4. **Thesen-Draft:** Jeder setzt 5 Thesen auf seine 5 Thesenfelder (Snake-Draft).
 5. **Spieler-Draft:** Jeder setzt 5 Spieler auf seine 5 Spielerfelder (Snake-Draft, der andere beginnt).
 6. **Deadline:** Beide Drafts müssen vor dem ersten Anstoß des Spieltags abgeschlossen sein.
@@ -40,7 +40,7 @@ Vor dem Draft wird per Rad ein Wert gelost (gleich für beide Spieler):
 
 ### Reihenfolge (Snake-Draft)
 
-P1 setzt 1 These, P2 setzt 2, P1 setzt 2, P2 setzt 2, P1 setzt 2, P2 setzt 1. P1 ist, wer Schnick Schnack Schnuck gewonnen hat.
+P1 setzt 1 These, P2 setzt 2, P1 setzt 2, P2 setzt 2, P1 setzt 2, P2 setzt 1. P1 ist, wer den Münzwurf gewonnen hat.
 
 ### Auflösung
 

@@ -339,14 +339,16 @@ a:hover {
 }
 .tile-top {
   display: flex;
+  flex-wrap: wrap; /* reicht der Platz nicht, rutscht das Label unter die Nummer */
   justify-content: space-between;
   align-items: center;
-  gap: 6px;
+  gap: 2px 6px;
 }
 .tile-number {
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 22px;
+  white-space: nowrap; /* „ST 10“ nie umbrechen */
 }
 .tile-verpasst .tile-number,
 .tile-zukunft .tile-number {
@@ -356,6 +358,7 @@ a:hover {
   font-size: 11px;
   font-weight: 600;
   text-align: right;
+  margin-left: auto; /* auch in der zweiten Zeile rechtsbündig */
 }
 .tile-points {
   display: flex;
@@ -615,69 +618,6 @@ textarea.input {
   font-size: 40px;
   line-height: 1;
 }
-.starter {
-  font: inherit;
-  color: var(--text);
-  text-align: left;
-  border-radius: var(--radius-card);
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  cursor: pointer;
-  background: var(--surface-raised);
-  border: 1px solid var(--input);
-}
-.starter:disabled {
-  cursor: default;
-}
-.starter-name {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 44px;
-  letter-spacing: 0.04em;
-  line-height: 1.1;
-}
-.starter-note {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-.starter-bent.is-starter {
-  background: var(--bent-card);
-  border: 2px solid var(--bent-light);
-}
-.starter-bent.is-starter .starter-note {
-  color: var(--bent-light);
-}
-.starter-bjoern.is-starter {
-  background: var(--bjoern-card);
-  border: 2px solid var(--bjoern-light);
-}
-.starter-bjoern.is-starter .starter-note {
-  color: var(--bjoern-light);
-}
-.starter-bent.is-other {
-  background: #121816;
-  border-color: #1f4a33;
-}
-.starter-bent.is-other .starter-note {
-  color: var(--bent-sub);
-}
-.starter-bjoern.is-other {
-  background: #1a1214;
-  border-color: #5a1a27;
-}
-.starter-bjoern.is-other .starter-note {
-  color: var(--bjoern-sub);
-}
-.vs {
-  text-align: center;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 22px;
-  color: var(--text-faint);
-}
 .prep-footer {
   display: flex;
   flex-wrap: wrap;
@@ -709,6 +649,73 @@ textarea.input {
 }
 @media (prefers-reduced-motion: reduce) {
   .wheel-disc {
+    transition: none !important;
+  }
+}
+
+/* ---------- Münzwurf ---------- */
+.coin {
+  width: 168px;
+  height: 168px;
+  perspective: 900px;
+  margin: 8px auto;
+}
+.coin-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+.coin-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 34px;
+  letter-spacing: 0.04em;
+}
+.coin-face::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  border: 2px dashed currentColor;
+  opacity: 0.35;
+}
+.coin-bent {
+  background: radial-gradient(circle at 35% 30%, var(--bent-light), var(--bent) 60%, var(--bent-card));
+  color: #fff;
+  box-shadow: inset 0 0 0 6px var(--bent-card);
+}
+.coin-bjoern {
+  background: radial-gradient(circle at 35% 30%, var(--bjoern-light), var(--bjoern) 60%, var(--bjoern-card));
+  color: #fff;
+  box-shadow: inset 0 0 0 6px var(--bjoern-card);
+  transform: rotateY(180deg);
+}
+.coin.is-idle .coin-face {
+  filter: grayscale(1) brightness(0.55);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .coin.is-tossing {
+    animation: coin-toss 2600ms cubic-bezier(0.3, 0.7, 0.4, 1);
+  }
+}
+@keyframes coin-toss {
+  0% { transform: translateY(0) scale(1); }
+  35% { transform: translateY(-60px) scale(1.12); }
+  80% { transform: translateY(0) scale(1); }
+  88% { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .coin-inner {
     transition: none !important;
   }
 }

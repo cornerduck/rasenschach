@@ -45,7 +45,7 @@ Dunkles Design, Bent in Werder-Grün, Björn in Bayern-Rot. Die HTML-Entwürfe a
 
 1. **Login** (zwei feste Konten, keine Registrierung)
 2. **Saisonübersicht:** 34 Spieltage als Kacheln (gewertet mit Ergebnis und Sieger, laufender Spieltag orange markiert, Rest ausgegraut), Saisonauswahl, Archiv vergangener Saisons
-3. **Spielvorbereitung:** Schnick-Schnack-Schnuck-Gewinner antippen, Rad ?-Feld (±3, +1, +2, +3, −3), Rad Springer (10 Kategorien), jeweils Ergebnis mit Erklärung darunter
+3. **Spielvorbereitung:** Münzwurf „Wer beginnt?“ (dreht sich live bei beiden), Rad ?-Feld (±3, +1, +2, +3, −3), Rad Springer (10 Kategorien), jeweils Ergebnis mit Erklärung darunter
 4. **Thesen-Draft live:** Leiste mit Snake-Reihenfolge (10 Kästchen B/J, erledigte gefüllt, aktueller Zug umrandet), Statusanzeige „X ist am Zug, N Thesen setzen“, oben Bents 5 Felder, Mitte Balken BENT vs BJÖRN, unten Björns Felder, rechts Thesenpool
 5. **Spieler-Draft live:** wie Thesen-Draft, Figuren Turm/Läufer/Springer/Dame/König (Springer zeigt die geloste Kategorie), Karte mit Foto bzw. Trikot, Name, Position, Verein, „x/3 genutzt“; rechts Pool mit Suche, Positionsfilter, gesperrte Spieler ausgegraut mit Grund (3/3, beim Gegner, gesetzt)
 6. **Spielfeld eines Spieltags:** links Spieltag, Punkte beider, Gesamtstand mit Balken, Spiele mit Ergebnissen; rechts 4 Reihen à 5 Karten (Bent Spieler, Bent Thesen, Balken, Björn Thesen, Björn Spieler), jede Karte mit Feld, Inhalt, Ergebnis und Punkten

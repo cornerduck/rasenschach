@@ -16,6 +16,7 @@ const r = (number: number, o: Partial<MatchdayResult>): MatchdayResult => ({
   turn: null,
   turnPicks: 0,
   played: false,
+  progress: { prep: 4, thesisPicks: 0, playerPicks: 0 },
   ...o,
 });
 
@@ -24,7 +25,7 @@ describe("Saison-Kacheln", () => {
     r(1, { status: "auswertung" }), // vor Spielbeginn, nicht mitgespielt
     r(8, { status: "abgeschlossen", played: true, bent: m(14), bjoern: m(10), winner: "bent" }),
     r(9, { status: "laeuft", played: true, bent: m(5), bjoern: m(7) }),
-    r(10, { status: "thesen_draft", turn: "bent", turnPicks: 2 }),
+    r(10, { status: "thesen_draft", turn: "bent", turnPicks: 2, progress: { prep: 4, thesisPicks: 3, playerPicks: 0 } }),
     r(11, { status: "vorbereitung" }),
   ]);
   const by = (n: number) => tiles.find((t) => t.number === n)!;
@@ -39,7 +40,13 @@ describe("Saison-Kacheln", () => {
     expect(by(9)).toMatchObject({ kind: "laufend", badge: "LÄUFT", points: { bent: 5, bjoern: 7, winner: null } });
   });
   it("aktueller Draft mit Zug", () => {
-    expect(by(10)).toMatchObject({ kind: "aktuell", badge: "LIVE", hint: "Thesen-Draft läuft · Bent am Zug" });
+    expect(by(10)).toMatchObject({ kind: "aktuell", badge: "LIVE", hint: "Thesen-Draft 3/10 · Bent am Zug" });
+  });
+  it("Vorbereitung mit Fortschritt", () => {
+    const [a] = seasonTiles([r(10, { status: "vorbereitung", progress: { prep: 2, thesisPicks: 0, playerPicks: 0 } })]);
+    expect(a).toMatchObject({ kind: "aktuell", badge: "ALS NÄCHSTES", hint: "Vorbereitung 2/4" });
+    const [b] = seasonTiles([r(10, { status: "vorbereitung" })]);
+    expect(b.hint).toBe("Vorbereitet · Thesen-Draft starten");
   });
   it("spätere Spieltage", () => {
     expect(by(11).kind).toBe("zukunft");

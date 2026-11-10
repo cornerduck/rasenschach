@@ -43,8 +43,13 @@ export async function spinWheel(matchdayId: number, wheel: "frage" | "springer")
   return prepRpc(wheel === "frage" ? "spin_question_wheel" : "spin_knight_wheel", { p_matchday_id: matchdayId });
 }
 
-export async function setStarter(matchdayId: number, starter: "bent" | "bjoern"): Promise<PrepResult> {
-  return prepRpc("set_thesis_starter", { p_matchday_id: matchdayId, p_starter: starter });
+/** Münzwurf: die Datenbank lost, wer den Thesen-Draft beginnt */
+export async function tossCoin(matchdayId: number): Promise<PrepResult> {
+  const res = await prepRpc("toss_coin", { p_matchday_id: matchdayId });
+  if (!res.ok && /toss_coin/.test(res.error)) {
+    return { ok: false, error: "Die Datenbank kennt den Münzwurf noch nicht. Bitte zuerst die neue Migration ausführen." };
+  }
+  return res;
 }
 
 export async function resetPrep(matchdayId: number, what: "frage" | "springer" | "start"): Promise<PrepResult> {

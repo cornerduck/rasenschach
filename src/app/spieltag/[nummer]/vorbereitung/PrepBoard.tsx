@@ -2,18 +2,19 @@
 
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
+import { Coin, COIN_SPIN_MS } from "@/components/Coin";
 import { Wheel, WHEEL_SPIN_MS } from "@/components/Wheel";
 import { KNIGHT_CATEGORIES } from "@/lib/scoring/players";
 import type { KnightCategory, QuestionValue } from "@/lib/scoring/types";
 import { KNIGHT_ORDER, QUESTION_EXPLAIN, QUESTION_LABELS, QUESTION_ORDER, knightExplain } from "@/lib/ui/prep-labels";
 import { StartDraftButton } from "@/components/StartDraftButton";
 import { useRealtime } from "@/lib/supabase/realtime";
-import { resetPrep, setStarter, spinWheel, type PrepResult, type PrepState } from "../actions";
+import { resetPrep, spinWheel, tossCoin, type PrepResult, type PrepState } from "../actions";
 
 type Manager = "bent" | "bjoern";
 
 /** Zeigt das Ergebnis erst, wenn das Rad steht (bei neu gedrehtem Wert). */
-function useReveal(value: string | null) {
+function useReveal(value: string | null, ms = WHEEL_SPIN_MS) {
   const [prev, setPrev] = useState(value);
   const [hidden, setHidden] = useState(false);
   if (value !== prev) {
@@ -22,9 +23,9 @@ function useReveal(value: string | null) {
   }
   useEffect(() => {
     if (!hidden) return;
-    const t = setTimeout(() => setHidden(false), WHEEL_SPIN_MS);
+    const t = setTimeout(() => setHidden(false), ms);
     return () => clearTimeout(t);
-  }, [hidden]);
+  }, [hidden, ms]);
   return hidden ? null : value;
 }
 
@@ -84,6 +85,8 @@ export function PrepBoard({
   const [error, setError] = useState<string | null>(null);
   const qShown = useReveal(questionValue);
   const kShown = useReveal(knightCategory);
+  const sShown = useReveal(thesisStarter, COIN_SPIN_MS) as Manager | null;
+  const NAME: Record<Manager, string> = { bent: "Bent", bjoern: "Björn" };
 
   const run = (fn: () => Promise<PrepResult>) =>
     startTransition(async () => {
@@ -95,35 +98,10 @@ export function PrepBoard({
 
   const ready = [
     { label: `${thesesCount}/12 Thesen`, done: thesesCount === 12 },
-    { label: "Startspieler", done: !!thesisStarter },
+    { label: "Münzwurf", done: !!thesisStarter },
     { label: "?-Feld", done: !!questionValue },
     { label: "Springer-Feld", done: !!knightCategory },
   ];
-
-  const starterButton = (who: Manager) => {
-    const name = who === "bent" ? "BENT" : "BJÖRN";
-    const state = thesisStarter === null ? "" : thesisStarter === who ? "is-starter" : "is-other";
-    const note =
-      thesisStarter === null
-        ? open
-          ? "antippen, wenn gewonnen"
-          : "offen"
-        : thesisStarter === who
-          ? "● BEGINNT DEN THESEN-DRAFT"
-          : "beginnt den Spieler-Draft";
-    return (
-      <button
-        type="button"
-        className={`starter starter-${who} ${state}`}
-        disabled={!open || pending || thesisStarter === who}
-        aria-pressed={thesisStarter === who}
-        onClick={() => run(() => setStarter(matchdayId, who))}
-      >
-        <span className="starter-name">{name}</span>
-        <span className="starter-note">{note}</span>
-      </button>
-    );
-  };
 
   return (
     <>
@@ -133,14 +111,36 @@ export function PrepBoard({
         </p>
       )}
       <div className="prep-grid">
-        <section className="prep-panel">
+        <section className="prep-panel centered">
           <div className="prep-head">
             <h2>Wer beginnt?</h2>
-            <span className="muted">Schnick Schnack Schnuck, danach den Gewinner antippen.</span>
+            <span className="muted">Münzwurf: Wer gewinnt, beginnt den Thesen-Draft.</span>
           </div>
-          {starterButton("bent")}
-          <div className="vs">VS</div>
-          {starterButton("bjoern")}
+          <Coin result={thesisStarter} />
+          <div className="wheel-result" aria-live="polite">
+            {sShown ? (
+              <>
+                <span className="wheel-value" style={{ color: sShown === "bent" ? "var(--bent-light)" : "var(--bjoern-light)" }}>
+                  {NAME[sShown]} beginnt
+                </span>
+                <span className="muted" style={{ fontSize: 13 }}>
+                  Thesen-Draft: {NAME[sShown]} · Spieler-Draft: {NAME[sShown === "bent" ? "bjoern" : "bent"]}
+                </span>
+              </>
+            ) : (
+              <span className="faint">{thesisStarter ? "…" : "noch nicht geworfen"}</span>
+            )}
+          </div>
+          {open && !thesisStarter && (
+            <button type="button" className="btn btn-primary" disabled={pending} onClick={() => run(() => tossCoin(matchdayId))}>
+              Münze werfen
+            </button>
+          )}
+          {open && thesisStarter && isAdmin && (
+            <button type="button" className="btn btn-ghost" disabled={pending} onClick={() => run(() => resetPrep(matchdayId, "start"))}>
+              Zurücksetzen (Admin)
+            </button>
+          )}
         </section>
 
         <section className="prep-panel centered">

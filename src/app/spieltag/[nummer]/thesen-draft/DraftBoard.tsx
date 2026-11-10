@@ -217,7 +217,7 @@ export function DraftBoard({
           );
         })}
         <span className="muted" style={{ fontSize: 12 }}>
-          Snake-Draft · {NAME[starter]} hat Schnick Schnack Schnuck gewonnen
+          Snake-Draft · {NAME[starter]} hat den Münzwurf gewonnen
         </span>
       </div>
 

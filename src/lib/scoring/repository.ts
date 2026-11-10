@@ -33,6 +33,7 @@ type MdRow = {
   knight_category: MatchdayRaw["knightCategory"];
   thesis_starter: MatchdayRaw["thesisStarter"];
   closed_at: string | null;
+  thesis_draft_started_at?: string | null;
   seasons: { rules: MatchdayRaw["rules"] };
 };
 
@@ -105,6 +106,7 @@ async function loadRaw(db: SupabaseClient, mdRows: MdRow[]): Promise<MatchdayRaw
     rules: md.seasons?.rules ?? null,
     matches: (matchesBy.get(md.id) ?? []).map((m) => ({ kickoff: m.kickoff, originalKickoff: m.original_kickoff, isFinished: m.is_finished })),
     thesesCount: thesesBy.get(md.id)?.length ?? 0,
+    draftStarted: !!md.thesis_draft_started_at,
     thesisPicks: (tpBy.get(md.id) ?? []).map((t) => ({
       manager: t.manager,
       field: t.field,
@@ -127,7 +129,8 @@ async function loadRaw(db: SupabaseClient, mdRows: MdRow[]): Promise<MatchdayRaw
   }));
 }
 
-const MD_SELECT = "id, number, question_value, knight_category, thesis_starter, closed_at, seasons!inner(rules, start_year)";
+// "*" statt einzelner Spalten: läuft auch, solange eine neue Spalte noch nicht per Migration angelegt ist
+const MD_SELECT = "*, seasons!inner(rules, start_year)";
 
 /** Ergebnis eines Spieltags (Saison als Startjahr, z. B. 2026). */
 export async function getMatchdayResult(db: SupabaseClient, season: number, number: number, now = new Date()): Promise<MatchdayResult | null> {

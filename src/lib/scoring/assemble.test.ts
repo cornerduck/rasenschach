@@ -5,6 +5,7 @@ import {
   deadlineOf,
   matchdayStatus,
   picksInARow,
+  prepProgress,
   snakeTurn,
   seasonStandings,
   toPlayerStats,
@@ -27,6 +28,7 @@ function raw(overrides: Partial<MatchdayRaw> = {}): MatchdayRaw {
     rules: null,
     matches: [{ kickoff: PAST, originalKickoff: PAST, isFinished: true }],
     thesesCount: 12,
+    draftStarted: true,
     thesisPicks: [],
     playerPicks: [],
     stats: [],
@@ -77,6 +79,10 @@ describe("Deadline und Status", () => {
     expect(matchdayStatus(raw({ ...future, thesesCount: 11 }), NOW)).toBe("vorbereitung");
     expect(matchdayStatus(raw({ ...future, knightCategory: null }), NOW)).toBe("vorbereitung");
     expect(matchdayStatus(raw({ ...future, thesisStarter: null }), NOW)).toBe("vorbereitung");
+  });
+  it("vorbereitet, aber Draft noch nicht gestartet: weiter Vorbereitung", () => {
+    expect(matchdayStatus(raw({ ...future, draftStarted: false }), NOW)).toBe("vorbereitung");
+    expect(prepProgress(raw({ thesesCount: 5, knightCategory: null }))).toEqual({ done: 2, total: 4 });
   });
   it("thesen_draft → spieler_draft", () => {
     expect(matchdayStatus(raw(future), NOW)).toBe("thesen_draft");

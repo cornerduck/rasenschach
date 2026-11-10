@@ -78,6 +78,8 @@ export interface MatchdayRaw {
   rules: Partial<{ springer_mindestminuten: number }> | null;
   matches: RawMatch[];
   thesesCount: number;
+  /** Thesen-Draft wurde gestartet (Knopf „Thesen-Draft starten“) */
+  draftStarted: boolean;
   thesisPicks: RawThesisPick[];
   playerPicks: RawPlayerPick[];
   stats: RawStat[];
@@ -145,6 +147,8 @@ export interface MatchdayResult {
   turnPicks: number;
   /** Mindestens ein Zug wurde gesetzt (sonst: Spieltag nicht mitgespielt) */
   played: boolean;
+  /** Vorbereitung erledigt (von 4) und Anzahl Züge je Draft, für die Kacheln */
+  progress: { prep: number; thesisPicks: number; playerPicks: number };
 }
 
 const SNAKE = [1, 2, 2, 1, 1, 2, 2, 1, 1, 2];
@@ -242,6 +246,12 @@ export function deadlineOf(matches: RawMatch[]): string | null {
   return min === null ? null : new Date(min).toISOString();
 }
 
+/** Fortschritt der Vorbereitung: 12 Thesen, Startspieler, ?-Rad, Springer-Rad */
+export function prepProgress(raw: Pick<MatchdayRaw, "thesesCount" | "thesisStarter" | "questionValue" | "knightCategory">) {
+  const done = [raw.thesesCount >= 12, !!raw.thesisStarter, !!raw.questionValue, !!raw.knightCategory].filter(Boolean).length;
+  return { done, total: 4 };
+}
+
 export function matchdayStatus(raw: MatchdayRaw, now: Date): MatchdayStatus {
   if (raw.closedAt) return "abgeschlossen";
   const deadline = deadlineOf(raw.matches);
@@ -249,7 +259,8 @@ export function matchdayStatus(raw: MatchdayRaw, now: Date): MatchdayStatus {
   if (past) {
     return raw.matches.length > 0 && raw.matches.every((m) => m.isFinished) ? "auswertung" : "laeuft";
   }
-  if (!raw.questionValue || !raw.knightCategory || !raw.thesisStarter || raw.thesesCount < 12) return "vorbereitung";
+  if (prepProgress(raw).done < 4) return "vorbereitung";
+  if (!raw.draftStarted && raw.thesisPicks.length === 0) return "vorbereitung"; // bereit, aber noch nicht gestartet
   if (raw.thesisPicks.length < 10) return "thesen_draft";
   if (raw.playerPicks.length < 10) return "spieler_draft";
   return "spieler_draft"; // beide Drafts fertig, wartet auf Anstoß
@@ -379,6 +390,7 @@ export function assembleMatchday(raw: MatchdayRaw, now: Date = new Date()): Matc
     turn,
     turnPicks,
     played: raw.thesisPicks.length + raw.playerPicks.length > 0,
+    progress: { prep: prepProgress(raw).done, thesisPicks: raw.thesisPicks.length, playerPicks: raw.playerPicks.length },
     deadline: deadlineOf(raw.matches),
     bent: managers.bent,
     bjoern: managers.bjoern,
