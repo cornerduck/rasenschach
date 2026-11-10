@@ -115,7 +115,7 @@ function MatchdayTile({ tile }: { tile: Tile }) {
     faint: "var(--text-faint)",
   }[tile.badgeColor];
   return (
-    <div className={`tile tile-${tile.kind}`}>
+    <Link className={`tile tile-${tile.kind} tile-link`} href={`/spieltag/${tile.number}`} aria-label={`Spieltag ${tile.number} öffnen`}>
       <div className="tile-top">
         <span className="tile-number">ST {String(tile.number).padStart(2, "0")}</span>
         {tile.badge && (
@@ -138,7 +138,7 @@ function MatchdayTile({ tile }: { tile: Tile }) {
       ) : (
         <span className="tile-hint">{tile.hint}</span>
       )}
-    </div>
+    </Link>
   );
 }
 

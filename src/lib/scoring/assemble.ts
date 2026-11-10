@@ -40,6 +40,8 @@ export interface RawPlayerPick {
   piece: Piece;
   pickNo: number;
   playerId: number;
+  /** Verein des Spielers (für Gegentore aus dem Ergebnis) */
+  clubId?: number | null;
 }
 
 export interface RawStat {
@@ -66,7 +68,28 @@ export interface RawMatch {
   kickoff: string;
   originalKickoff: string | null;
   isFinished: boolean;
+  homeClubId?: number;
+  awayClubId?: number;
+  homeGoals?: number | null;
+  awayGoals?: number | null;
 }
+
+/**
+ * Gegentore eines Vereins laut Ergebnis (OpenLigaDB), auch während das Spiel läuft.
+ * null = Verein hat (noch) kein Ergebnis an diesem Spieltag.
+ */
+export function teamConceded(matches: RawMatch[], clubId: number | null | undefined): number | null {
+  if (clubId == null) return null;
+  for (const m of matches) {
+    if (m.homeGoals == null || m.awayGoals == null) continue;
+    if (m.homeClubId === clubId) return m.awayGoals;
+    if (m.awayClubId === clubId) return m.homeGoals;
+  }
+  return null;
+}
+
+/** Herkunft eines Wertes, der aus dem Spielergebnis abgeleitet ist */
+export const RESULT_SOURCE = "ergebnis";
 
 export interface MatchdayRaw {
   matchdayId: number;
@@ -171,7 +194,7 @@ export function picksInARow(pickNo: number): number {
 // ---------------------------------------------------------------------------
 
 /** stat_values-Schlüssel → Feld in PlayerStats */
-const STAT_FIELDS: Record<string, keyof PlayerStats> = {
+export const STAT_FIELDS: Record<string, keyof PlayerStats> = {
   minutes_played: "minutesPlayed",
   goals: "goals",
   assists: "assists",
@@ -350,7 +373,14 @@ export function assembleMatchday(raw: MatchdayRaw, now: Date = new Date()): Matc
 
   for (const p of [...raw.playerPicks].sort((a, b) => a.pickNo - b.pickNo)) {
     const m = managers[p.manager];
-    const stats = toPlayerStats(statsByPlayer.get(p.playerId) ?? []);
+    const rows = [...(statsByPlayer.get(p.playerId) ?? [])];
+    // Turm: Gegentore automatisch aus dem Ergebnis, solange nichts eingetragen ist
+    // (wurde der Torhüter aus- oder eingewechselt, trägt Bent die Gegentore per Hand ein)
+    if (p.piece === "turm" && !rows.some((r) => r.statKey === "goals_conceded_on_pitch")) {
+      const conceded = teamConceded(raw.matches, p.clubId);
+      if (conceded !== null) rows.push({ playerId: p.playerId, statKey: "goals_conceded_on_pitch", value: conceded, source: RESULT_SOURCE });
+    }
+    const stats = toPlayerStats(rows);
     const ranks = ranksByPlayer.get(p.playerId) ?? {};
     const score =
       p.piece === "springer" && !raw.knightCategory

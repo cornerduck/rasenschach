@@ -1,6 +1,8 @@
 "use server";
 
+import { leagueTopN, rankEntries } from "@/lib/scoring/league";
 import { createClient } from "@/lib/supabase/server";
+import { EDITABLE_STATS } from "@/lib/ui/evaluation";
 import type { KnightCategory, QuestionValue } from "@/lib/scoring/types";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -100,4 +102,68 @@ export async function makePlayerPick(
 export async function resetPlayerDraft(matchdayId: number): Promise<ActionResult> {
   const res = await rpc("reset_player_draft", { p_matchday_id: matchdayId });
   return !res.ok && /reset_player_draft/.test(res.error) ? { ok: false, error: MIGRATION_HINT } : res;
+}
+
+// ---------------------------------------------------------------------------
+// Auswertung
+
+const SCORING_HINT = "Die Datenbank kennt die Auswertung noch nicht. Bitte zuerst die neue Migration ausführen.";
+const scoringRpc = async (fn: string, args: Record<string, unknown>) => {
+  const res = await rpc(fn, args);
+  return !res.ok && new RegExp(fn).test(res.error) ? ({ ok: false, error: SCORING_HINT } as const) : res;
+};
+
+/** These auflösen (setzt automatisch die eigene Bestätigung). null = Ergebnis zurücknehmen */
+export async function setThesisOutcome(thesisId: number, outcome: boolean | null): Promise<ActionResult> {
+  return rpc("set_thesis_outcome", { p_thesis_id: thesisId, p_outcome: outcome });
+}
+
+/** Ergebnis einer These bestätigen */
+export async function confirmThesis(thesisId: number): Promise<ActionResult> {
+  return rpc("confirm_thesis", { p_thesis_id: thesisId });
+}
+
+/** Admin: Wert per Hand setzen; null = Handeingabe löschen (dann gilt der automatische Wert) */
+export async function setStatValue(matchdayId: number, playerId: number, statKey: string, value: number | null): Promise<ActionResult> {
+  if (!EDITABLE_STATS.has(statKey)) return { ok: false, error: `Unbekannter Wert „${statKey}“` };
+  if (value !== null && (!Number.isFinite(value) || value < 0)) return { ok: false, error: "Bitte eine Zahl ab 0 eintragen" };
+  return scoringRpc("set_stat_value", { p_matchday_id: matchdayId, p_player_id: playerId, p_stat_key: statKey, p_value: value });
+}
+
+/** Admin: Team bzw. Spieler der Woche für einen Spieler setzen */
+export async function setWeekly(matchdayId: number, playerId: number, value: "keins" | "team" | "spieler"): Promise<ActionResult> {
+  const team = await setStatValue(matchdayId, playerId, "team_of_week", value === "keins" ? null : 1);
+  if (!team.ok) return team;
+  return setStatValue(matchdayId, playerId, "player_of_week", value === "spieler" ? 1 : null);
+}
+
+/**
+ * Admin: ligaweite Bestwerte eintragen. Die Plätze berechnet das Tool nach den Regeln
+ * (geteilter Platz, danach der übernächste; nur Werte über 0).
+ */
+export async function setLeagueEntries(
+  matchdayId: number,
+  statKey: string,
+  entries: { playerId: number | null; name: string; value: number }[],
+): Promise<ActionResult> {
+  for (const e of entries) {
+    if (e.playerId === null && !e.name.trim()) return { ok: false, error: "Bei „Anderer Spieler“ bitte einen Namen eintragen" };
+    if (!Number.isFinite(e.value) || e.value < 0) return { ok: false, error: "Bitte bei jedem Eintrag einen Wert ab 0 eintragen" };
+  }
+  const ranked = rankEntries(entries, leagueTopN(statKey));
+  return scoringRpc("set_league_entries", {
+    p_matchday_id: matchdayId,
+    p_stat_key: statKey,
+    p_entries: ranked.map((e) => ({ player_id: e.playerId, player_name: e.name.trim() || null, value: e.value, rank: e.rank })),
+  });
+}
+
+/** Admin: Spieltag freigeben (nur wenn alle Spiele gespielt und alle Thesen bestätigt sind) */
+export async function closeMatchday(matchdayId: number): Promise<ActionResult> {
+  return scoringRpc("close_matchday", { p_matchday_id: matchdayId });
+}
+
+/** Admin: abgeschlossenen Spieltag wieder öffnen (für Korrekturen) */
+export async function reopenMatchday(matchdayId: number): Promise<ActionResult> {
+  return scoringRpc("reopen_matchday", { p_matchday_id: matchdayId });
 }

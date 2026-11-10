@@ -32,3 +32,21 @@ export function podiumPoints(rank: number | undefined): number {
   if (rank === 3) return 1;
   return 0;
 }
+
+/** Wie viele Plätze zählen pro ligaweitem Wert? Laufleistung und Springer: Platz 1–3, sonst nur Platz 1. */
+export function leagueTopN(statKey: string): number {
+  return statKey === "goals" || statKey === "scorer_points" || statKey === "goals_prevented" || statKey === "sprints" ? 1 : 3;
+}
+
+/**
+ * Eingetragene Bestwerte (z. B. Laufleistung der drei Besten) → Plätze nach den Regeln:
+ * geteilter Platz für alle, danach der übernächste (1, 1, 3); nur Werte über 0.
+ * Einträge ohne Platz (zu weit hinten oder Wert 0) fallen weg.
+ */
+export function rankEntries<T extends { value: number | null | undefined }>(entries: T[], topN: number): (T & { rank: number })[] {
+  const ranks = leagueRanks(entries.map((e, i) => ({ id: i, value: e.value })), topN);
+  return entries
+    .map((e, i) => ({ ...e, rank: ranks.get(i) }))
+    .filter((e): e is T & { rank: number } => e.rank !== undefined)
+    .sort((a, b) => a.rank - b.rank);
+}

@@ -51,6 +51,8 @@ export interface MatchdayContext {
   playerPickCount: number;
   deadline: string | null;
   deadlinePassed: boolean;
+  /** Zeitpunkt des Ladens (ms), damit Seiten nicht selbst die Uhr lesen */
+  now: number;
   /** Vorbereitung und Thesen sind noch änderbar (kein Zug gesetzt, Deadline nicht vorbei, Saison aktiv) */
   prepOpen: boolean;
   prepComplete: boolean;
@@ -123,6 +125,7 @@ export async function loadMatchday(db: SupabaseClient, number: number, now = new
     playerDraftStarted: !!md.player_draft_started_at || (pp.count ?? 0) > 0,
     deadline,
     deadlinePassed,
+    now: now.getTime(),
     prepOpen: thesisPickCount === 0 && !deadlinePassed && !md.closed_at,
     prepComplete: thesesRows.length === 12 && !!md.question_value && !!md.knight_category && !!md.thesis_starter,
   };

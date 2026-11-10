@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { AppHeader } from "./AppHeader";
 
-export type Step = "thesen" | "vorbereitung" | "draft" | "spieler";
+export type Step = "thesen" | "vorbereitung" | "draft" | "spieler" | "spielfeld";
 
 const STEPS: { key: Step; label: string; path: string | null }[] = [
   { key: "thesen", label: "Thesen", path: "thesen" },
   { key: "vorbereitung", label: "Spielvorbereitung", path: "vorbereitung" },
   { key: "draft", label: "Thesen-Draft", path: "thesen-draft" },
   { key: "spieler", label: "Spieler-Draft", path: "spieler-draft" },
+  { key: "spielfeld", label: "Spielfeld", path: "spielfeld" },
 ];
 
 /** Kopfzeile für die Spieltagsseiten mit Schrittleiste */

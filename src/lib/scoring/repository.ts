@@ -28,6 +28,7 @@ async function fetchAll<T>(build: (from: number, to: number) => PromiseLike<{ da
 
 type MdRow = {
   id: number;
+  season_id: number;
   number: number;
   question_value: MatchdayRaw["questionValue"];
   knight_category: MatchdayRaw["knightCategory"];
@@ -43,8 +44,16 @@ async function loadRaw(db: SupabaseClient, mdRows: MdRow[]): Promise<MatchdayRaw
   if (ids.length === 0) return [];
 
   const [matches, theses, thesisPicks, playerPicks, stats, goals, ranks] = await Promise.all([
-    fetchAll<{ id: number; matchday_id: number; kickoff: string; original_kickoff: string | null; is_finished: boolean }>((a, b) =>
-      db.from("matches").select("id, matchday_id, kickoff, original_kickoff, is_finished").in("matchday_id", ids).order("id").range(a, b),
+    fetchAll<{
+      id: number; matchday_id: number; kickoff: string; original_kickoff: string | null; is_finished: boolean;
+      home_club_id: number; away_club_id: number; home_goals: number | null; away_goals: number | null;
+    }>((a, b) =>
+      db
+        .from("matches")
+        .select("id, matchday_id, kickoff, original_kickoff, is_finished, home_club_id, away_club_id, home_goals, away_goals")
+        .in("matchday_id", ids)
+        .order("id")
+        .range(a, b),
     ),
     fetchAll<{ matchday_id: number }>((a, b) => db.from("theses").select("matchday_id").in("matchday_id", ids).order("id").range(a, b)),
     fetchAll<{
@@ -84,6 +93,17 @@ async function loadRaw(db: SupabaseClient, mdRows: MdRow[]): Promise<MatchdayRaw
     ),
   ]);
 
+  // Verein der gesetzten Spieler (für Gegentore des Turms aus dem Ergebnis)
+  const seasonIds = [...new Set(mdRows.map((m) => m.season_id))];
+  const pickedIds = [...new Set(playerPicks.map((p) => p.player_id))];
+  const clubOf = new Map<string, number>();
+  if (pickedIds.length) {
+    const squad = await fetchAll<{ season_id: number; player_id: number; club_id: number }>((a, b) =>
+      db.from("squad_memberships").select("season_id, player_id, club_id").in("season_id", seasonIds).in("player_id", pickedIds).order("player_id").range(a, b),
+    );
+    for (const m of squad) clubOf.set(`${m.season_id}:${m.player_id}`, m.club_id);
+  }
+
   const by = <T extends { matchday_id: number }>(rows: T[]) => {
     const m = new Map<number, T[]>();
     for (const r of rows) m.set(r.matchday_id, [...(m.get(r.matchday_id) ?? []), r]);
@@ -97,7 +117,7 @@ async function loadRaw(db: SupabaseClient, mdRows: MdRow[]): Promise<MatchdayRaw
   const goalsBy = by(goals.map((g) => ({ ...g, matchday_id: g.matches.matchday_id })));
   const ranksBy = by(ranks);
 
-  return mdRows.map((md) => ({
+  const out: MatchdayRaw[] = mdRows.map((md) => ({
     matchdayId: md.id,
     number: md.number,
     questionValue: md.question_value,
@@ -105,7 +125,15 @@ async function loadRaw(db: SupabaseClient, mdRows: MdRow[]): Promise<MatchdayRaw
     thesisStarter: md.thesis_starter,
     closedAt: md.closed_at,
     rules: md.seasons?.rules ?? null,
-    matches: (matchesBy.get(md.id) ?? []).map((m) => ({ kickoff: m.kickoff, originalKickoff: m.original_kickoff, isFinished: m.is_finished })),
+    matches: (matchesBy.get(md.id) ?? []).map((m) => ({
+      kickoff: m.kickoff,
+      originalKickoff: m.original_kickoff,
+      isFinished: m.is_finished,
+      homeClubId: m.home_club_id,
+      awayClubId: m.away_club_id,
+      homeGoals: m.home_goals,
+      awayGoals: m.away_goals,
+    })),
     thesesCount: thesesBy.get(md.id)?.length ?? 0,
     draftStarted: !!md.thesis_draft_started_at,
     playerDraftStarted: !!md.player_draft_started_at,
@@ -119,7 +147,13 @@ async function loadRaw(db: SupabaseClient, mdRows: MdRow[]): Promise<MatchdayRaw
       confirmedBent: t.theses.confirmed_bent,
       confirmedBjoern: t.theses.confirmed_bjoern,
     })),
-    playerPicks: (ppBy.get(md.id) ?? []).map((p) => ({ manager: p.manager, piece: p.piece, pickNo: p.pick_no, playerId: p.player_id })),
+    playerPicks: (ppBy.get(md.id) ?? []).map((p) => ({
+      manager: p.manager,
+      piece: p.piece,
+      pickNo: p.pick_no,
+      playerId: p.player_id,
+      clubId: clubOf.get(`${md.season_id}:${p.player_id}`) ?? null,
+    })),
     stats: (statsBy.get(md.id) ?? []).map((s) => ({ playerId: s.player_id, statKey: s.stat_key, value: Number(s.value), source: s.source })),
     goals: (goalsBy.get(md.id) ?? []).map((g) => ({
       playerId: g.player_id,
@@ -129,6 +163,7 @@ async function loadRaw(db: SupabaseClient, mdRows: MdRow[]): Promise<MatchdayRaw
     })),
     leagueRanks: (ranksBy.get(md.id) ?? []).map((r) => ({ statKey: r.stat_key, rank: r.rank, playerId: r.player_id })),
   }));
+  return out;
 }
 
 // "*" statt einzelner Spalten: läuft auch, solange eine neue Spalte noch nicht per Migration angelegt ist

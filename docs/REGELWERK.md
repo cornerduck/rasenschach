@@ -133,7 +133,7 @@ Verglichen wird mit **allen** Bundesligaspielern des Spieltags. Teilen sich mehr
 - Die Saison gewinnt, wer nach dem 34. Spieltag die meisten Gesamtpunkte hat. Kein Tiebreaker, kein Joker.
 - Spieltagspunkte = Thesenpunkte + Spielerpunkte, werden dem Gesamtkonto gutgeschrieben.
 - Der Spieltagssieger wird nur als Statistik angezeigt, zählt nicht für die Wertung.
-- Ein Spieltag wird erst abgeschlossen, wenn alle seine Spiele gespielt sind (Nachholspiele abwarten).
+- Ein Spieltag wird erst abgeschlossen, wenn alle seine Spiele gespielt sind (Nachholspiele abwarten), alle Thesen von beiden bestätigt sind und der Admin ihn freigibt.
 - Abgeschlossene Saisons bleiben mit allen Spieltagen im Archiv gespeichert.
 
 ### Festgelegte Auslegungen (bestätigt 09.11.2026)
@@ -144,8 +144,8 @@ Verglichen wird mit **allen** Bundesligaspielern des Spieltags. Teilen sich mehr
 4. **Ligaweite Boni** nur bei einem Wert über 0 (schießt niemand ein Tor, gibt es keinen Bonus „meiste Tore“).
 5. **Fehlende Einsatzminuten** gelten als eingesetzt; „nicht eingesetzt“ (0 Punkte) erst bei ausdrücklich 0 Minuten.
 6. **3er-Limit:** Ein gedrafteter Spieler zählt immer für das Limit, auch ohne Einsatz (bestätigt 10.11.2026).
+7. **Springer ohne Mindesteinsatzzeit:** Jeder Einsatz zählt, nur „nicht eingesetzt“ (0 Minuten) bringt 0 Punkte (bestätigt 10.11.2026). Die Einstellung bleibt im Tool änderbar; Auslegung 2 gilt, falls später eine Mindestzeit eingeführt wird.
 
 ### Noch offen (mit Bent klären, bis dahin konfigurierbar bauen)
 
 - Was gilt bei verpasster Deadline? Vorschlag: leere Felder bringen 0.
-- Springer: Welche Mindesteinsatzzeit bzw. Mindestmenge gilt genau?
