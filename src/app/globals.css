@@ -2259,3 +2259,61 @@ a.tile-link:focus-visible {
   vertical-align: middle;
   flex-shrink: 0;
 }
+
+/* ---------- Spielerbilder ---------- */
+.player-photo {
+  display: inline-block;
+  border-radius: 999px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #1a1f1c;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  vertical-align: middle;
+}
+.player-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+.kit-circle .player-photo {
+  box-shadow: none;
+}
+.rank-row {
+  grid-template-columns: 24px 36px 1fr auto auto;
+}
+.stats-table th.player-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.photo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.photo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-faint);
+}
+.photo-row .rank-main {
+  flex: 1 1 auto;
+}
+.photo-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.photo-actions label {
+  cursor: pointer;
+}
+.photo-actions label:focus-within {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}

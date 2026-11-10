@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useDeferredValue, useMemo, useState, useTransition, type DragEvent } from "react";
 import { ClubLogo } from "@/components/ClubLogo";
-import { Jersey } from "@/components/Jersey";
+import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { normalizeName } from "@/lib/roster/names";
 import { picksInARow, snakeTurn } from "@/lib/scoring/assemble";
 import type { KnightCategory, Piece } from "@/lib/scoring/types";
@@ -215,9 +215,20 @@ export function PlayerDraftBoard({
     },
   });
 
-  const kit = (p: DraftPlayer, width: number, label = true) => {
+  // Spielerbild rund, sonst Trikot mit Rückennummer
+  const kit = (p: DraftPlayer, size: number, jerseyWidth: number, label = true) => {
     const c = clubById.get(p.clubId);
-    return <Jersey primary={c?.primary ?? "#2A312E"} secondary={c?.secondary ?? "#ECEFED"} number={p.number} width={width} label={label} />;
+    return (
+      <PlayerAvatar
+        photoUrl={p.photoUrl}
+        primary={c?.primary ?? "#2A312E"}
+        secondary={c?.secondary ?? "#ECEFED"}
+        number={p.number}
+        size={size}
+        jerseyWidth={jerseyWidth}
+        label={label}
+      />
+    );
   };
 
   const cardBody = (p: DraftPlayer, owner: Manager) => {
@@ -225,12 +236,7 @@ export function PlayerDraftBoard({
     return (
       <>
         <span className={`kit-circle kit-${owner}`}>
-          {p.photoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={p.photoUrl} alt="" width={96} height={96} />
-          ) : (
-            kit(p, 62)
-          )}
+          {kit(p, 96, 62)}
         </span>
         <span className="player-card-name">{p.shortName.toUpperCase()}</span>
         <span className={`player-card-meta meta-${owner}`}>
@@ -468,7 +474,7 @@ export function PlayerDraftBoard({
                   aria-pressed={selPlayer === p.id}
                   onClick={() => choosePlayer(p.id)}
                 >
-                  {kit(p, 30, false)}
+                  {kit(p, 30, 30, false)}
                   <span className="pp-text">
                     <span className="pp-name">{p.name}</span>
                     <span className="pp-meta with-logo">

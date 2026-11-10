@@ -56,6 +56,11 @@ async function UserMenu() {
           Vereine
         </Link>
       )}
+      {me.isAdmin && (
+        <Link href="/spielerbilder" className="nav-link" style={{ fontSize: 13 }}>
+          Bilder
+        </Link>
+      )}
       <button type="submit" className="btn btn-ghost">
         Abmelden
       </button>

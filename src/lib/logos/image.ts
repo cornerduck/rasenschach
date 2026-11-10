@@ -31,3 +31,6 @@ export function checkLogo(bytes: Uint8Array): { ok: true; type: LogoType } | { o
 
 /** Pfad im Bucket, z. B. "svw.png" */
 export const logoPath = (code: string, ext: string) => `${code.toLowerCase()}.${ext}`;
+
+/** Gleiche Prüfung für Spielerbilder */
+export const checkImage = checkLogo;

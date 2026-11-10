@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { MatchdayResult } from "@/lib/scoring/assemble";
 import { getSeasonStandings } from "@/lib/scoring/repository";
 import type { ClubLogoData } from "@/components/ClubLogo";
+import { ownPhotoUrl } from "@/lib/photos/files";
 import { clubLogo } from "@/lib/ui/club";
 import type { Position } from "@/lib/ui/pieces";
 import type { MatchdayContext } from "./load";
@@ -66,7 +67,7 @@ export async function loadEvaluation(db: SupabaseClient, ctx: MatchdayContext): 
         id: r.player_id,
         name: r.players.full_name,
         shortName: r.players.short_name,
-        photoUrl: r.players.photo_url,
+        photoUrl: ownPhotoUrl(r.players.photo_url),
         position: r.position,
         number: r.shirt_number,
         club: {

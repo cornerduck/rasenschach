@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ClubLogo, type ClubLogoData } from "@/components/ClubLogo";
+import { PlayerAvatar } from "@/components/PlayerAvatar";
 import type { Piece } from "@/lib/scoring/types";
 import { PIECE_LABEL, PIECE_ORDER } from "@/lib/ui/pieces";
 
@@ -13,7 +14,16 @@ export interface PlayerLabel {
   name: string;
   meta: string; // "ST · FCB"
   club: ClubLogoData;
+  photoUrl: string | null;
+  number: number | null;
 }
+
+const Avatar = ({ p, size }: { p: PlayerLabel | undefined; size: number }) =>
+  p ? (
+    <PlayerAvatar photoUrl={p.photoUrl} primary={p.club.primary} secondary={p.club.secondary} number={p.number} size={size} jerseyWidth={size} label={false} />
+  ) : (
+    <span style={{ width: size }} />
+  );
 
 export interface PerformanceRow {
   number: number;
@@ -46,6 +56,7 @@ export function BestPerformances({ rows, players }: { rows: PerformanceRow[]; pl
           return (
             <li key={`${r.number}-${r.manager}-${r.piece}`} className="rank-row">
               <span className="rank-no">{i + 1}</span>
+              <Avatar p={p} size={36} />
               <span className="rank-main">
                 <span className="rank-name">{p?.name ?? `Spieler #${r.playerId}`}</span>
                 <span className="rank-meta">
@@ -98,10 +109,13 @@ export function DraftedPlayers({ rows, players, limit }: { rows: DraftedRow[]; p
               const p = players[r.playerId];
               return (
                 <tr key={r.playerId}>
-                  <th scope="row">
+                  <th scope="row" className="player-cell">
+                    <Avatar p={p} size={30} />
+                    <span>
                     <span className="rank-name">{p?.name ?? `Spieler #${r.playerId}`}</span>
                     <span className="rank-meta">
                       {p && <ClubLogo club={p.club} size={14} decorative fallback="dot" />} {p?.meta}
+                    </span>
                     </span>
                   </th>
                   <td className="num">{r.total}×</td>

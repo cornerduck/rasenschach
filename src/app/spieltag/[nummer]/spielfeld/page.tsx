@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ClubLogo } from "@/components/ClubLogo";
 import { CloseMatchday } from "@/components/CloseMatchday";
-import { Jersey } from "@/components/Jersey";
+import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { MatchdayHeader } from "@/components/MatchdayHeader";
 import { MatchdayLive } from "@/components/MatchdayLive";
 import { loadEvaluation, type EvalPlayer } from "@/lib/matchday/evaluation";
@@ -255,11 +255,16 @@ async function FieldContent({ params }: { params: PageProps<"/spieltag/[nummer]/
 const ptsClass = (n: number) => (n > 0 ? "is-plus" : n < 0 ? "is-minus" : "is-zero");
 
 function Kit({ p }: { p: EvalPlayer }) {
-  if (p.photoUrl) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img className="field-photo" src={p.photoUrl} alt="" width={46} height={46} />;
-  }
-  return <Jersey primary={p.club?.primary ?? "#2A312E"} secondary={p.club?.secondary ?? "#ECEFED"} number={p.number} width={46} />;
+  return (
+    <PlayerAvatar
+      photoUrl={p.photoUrl}
+      primary={p.club?.primary ?? "#2A312E"}
+      secondary={p.club?.secondary ?? "#ECEFED"}
+      number={p.number}
+      size={52}
+      jerseyWidth={46}
+    />
+  );
 }
 
 function Fixture({ m, now }: { m: MatchRow; now: number }) {

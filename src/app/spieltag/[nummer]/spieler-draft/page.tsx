@@ -10,6 +10,7 @@ import { formatKickoff, loadMatchday } from "@/lib/matchday/load";
 import type { Piece } from "@/lib/scoring/types";
 import { getMe } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { ownPhotoUrl } from "@/lib/photos/files";
 import { ownLogoUrl } from "@/lib/ui/club";
 import type { Position } from "@/lib/ui/pieces";
 import { PlayerDraftBoard, type DraftClub, type DraftPlayer, type PlayerPick } from "./PlayerDraftBoard";
@@ -116,7 +117,7 @@ async function PlayerDraftContent({ params }: { params: PageProps<"/spieltag/[nu
     id: r.player_id,
     name: r.players.full_name,
     shortName: r.players.short_name,
-    photoUrl: r.players.photo_url,
+    photoUrl: ownPhotoUrl(r.players.photo_url),
     clubId: r.club_id,
     position: r.position,
     number: r.shirt_number,

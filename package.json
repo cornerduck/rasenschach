@@ -12,6 +12,7 @@
     "sync:spielplan": "tsx --conditions=react-server --env-file=.env.local scripts/sync-spielplan.mts",
     "import:kader": "tsx --conditions=react-server --env-file=.env.local scripts/import-kader.mts",
     "torschuetzen": "tsx --conditions=react-server --env-file=.env.local scripts/torschuetzen.mts",
+    "import:bilder": "tsx --conditions=react-server --env-file=.env.local scripts/import-bilder.mts",
     "import:logos": "tsx --conditions=react-server --env-file=.env.local scripts/import-logos.mts",
     "punkte": "tsx --conditions=react-server --env-file=.env.local scripts/punkte.mts"
   },
