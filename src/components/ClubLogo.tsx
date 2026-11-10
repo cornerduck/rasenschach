@@ -30,18 +30,21 @@ export function ClubLogo({
 }) {
   const [broken, setBroken] = useState(false);
   if (club.logoUrl && !broken) {
+    // Heller runder Hintergrund, damit auch dunkle Logos (z. B. Paderborn) auf dem dunklen Design lesbar sind
+    const inner = Math.round(size * 0.74);
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        className="club-logo"
-        src={club.logoUrl}
-        alt={decorative ? "" : club.code}
-        width={size}
-        height={size}
-        loading="lazy"
-        decoding="async"
-        onError={() => setBroken(true)}
-      />
+      <span className="club-logo" style={{ width: size, height: size }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={club.logoUrl}
+          alt={decorative ? "" : club.code}
+          width={inner}
+          height={inner}
+          loading="lazy"
+          decoding="async"
+          onError={() => setBroken(true)}
+        />
+      </span>
     );
   }
   if (fallback === "dot") {
