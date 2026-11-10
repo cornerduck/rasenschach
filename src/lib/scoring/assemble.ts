@@ -156,6 +156,8 @@ export interface ManagerResult {
 export interface MatchdayResult {
   matchdayId: number;
   number: number;
+  /** gelostes ?-Feld (für die Trefferquote) */
+  questionValue?: QuestionValue | null;
   status: MatchdayStatus;
   deadline: string | null;
   bent: ManagerResult;
@@ -419,6 +421,7 @@ export function assembleMatchday(raw: MatchdayRaw, now: Date = new Date()): Matc
   return {
     matchdayId: raw.matchdayId,
     number: raw.number,
+    questionValue: raw.questionValue,
     status,
     turn,
     turnPicks,

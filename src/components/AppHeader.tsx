@@ -9,7 +9,7 @@ type Section = "saison" | "spieltag" | "statistik" | "archiv";
 const NAV: { key: Section; label: string; href: string | null }[] = [
   { key: "saison", label: "Saison", href: "/" },
   { key: "spieltag", label: "Spieltag", href: "/spieltag" },
-  { key: "statistik", label: "Statistik", href: null }, // folgt
+  { key: "statistik", label: "Statistik", href: "/statistik" },
   { key: "archiv", label: "Archiv", href: "/#archiv" },
 ];
 

@@ -5,6 +5,7 @@ import { SeasonLive } from "@/components/SeasonLive";
 import { AppHeader } from "@/components/AppHeader";
 import { SeasonSelect } from "@/components/SeasonSelect";
 import { getSeasonStandings } from "@/lib/scoring/repository";
+import { seasonStats } from "@/lib/stats/season-stats";
 import { createClient } from "@/lib/supabase/server";
 import { continueMatchday, seasonTiles, type Tile } from "@/lib/ui/season-tiles";
 
@@ -45,7 +46,9 @@ async function SeasonOverview({ searchParams }: { searchParams: PageProps<"/">["
   const standings = await getSeasonStandings(db, season.start_year);
   const results = standings?.matchdays ?? [];
   const tiles = seasonTiles(results);
-  const closed = results.filter((r) => r.status === "abgeschlossen" && r.played).length;
+  const stats = seasonStats(results);
+  const closed = stats.closedCount;
+  const running = stats.perMatchday.find((m) => m.provisional);
   const next = season.is_archived ? null : continueMatchday(results);
   const archived = seasons.filter((s) => s.is_archived);
   const archivedStandings = await Promise.all(archived.map((s) => getSeasonStandings(db, s.start_year)));
@@ -57,9 +60,7 @@ async function SeasonOverview({ searchParams }: { searchParams: PageProps<"/">["
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <h1 className="page-title">Saisonübersicht</h1>
           <span className="muted">
-            {closed} {closed === 1 ? "Spieltag" : "Spieltage"} gewertet ·{" "}
-            <span style={{ color: "var(--bent-light)" }}>Bent {standings?.bent ?? 0}</span> ·{" "}
-            <span style={{ color: "var(--bjoern-light)" }}>Björn {standings?.bjoern ?? 0}</span>
+            {closed} {closed === 1 ? "Spieltag" : "Spieltage"} gewertet
             {season.is_archived && " · archiviert"}
           </span>
         </div>
@@ -72,6 +73,34 @@ async function SeasonOverview({ searchParams }: { searchParams: PageProps<"/">["
           )}
         </div>
       </div>
+
+      <section className="standing" aria-label="Gesamtstand">
+        <div className="standing-side side-bent">
+          <span className="label-small">BENT{stats.leader === "bent" ? " · FÜHRT" : ""}</span>
+          <span className="standing-big">{stats.totals.bent}</span>
+        </div>
+        <div className="standing-mid">
+          <span className="standing-vs">:</span>
+        </div>
+        <div className="standing-side side-bjoern" style={{ textAlign: "right" }}>
+          <span className="label-small">{stats.leader === "bjoern" ? "FÜHRT · " : ""}BJÖRN</span>
+          <span className="standing-big">{stats.totals.bjoern}</span>
+        </div>
+        <div className="standing-record">
+          <span>
+            Siege <strong style={{ color: "var(--bent-light)" }}>Bent {stats.wins.bent}</strong> ·{" "}
+            <strong style={{ color: "var(--bjoern-light)" }}>Björn {stats.wins.bjoern}</strong> · Unentschieden {stats.draws}
+          </span>
+          {running ? (
+            <span className="muted">
+              ST {String(running.number).padStart(2, "0")} läuft (vorläufig, zählt noch nicht): Bent {signed(running.bent)} · Björn {signed(running.bjoern)}
+            </span>
+          ) : (
+            <span className="muted">Gesamtstand aus abgeschlossenen Spieltagen</span>
+          )}
+          <Link href={season.is_archived ? `/statistik?saison=${season.start_year}` : "/statistik"}>Zur Statistik</Link>
+        </div>
+      </section>
 
       <div className="tiles">
         {tiles.map((t) => (

@@ -30,8 +30,14 @@ describe("Saison-Kacheln", () => {
   ]);
   const by = (n: number) => tiles.find((t) => t.number === n)!;
 
-  it("nicht mitgespielte vergangene Spieltage", () => {
-    expect(by(1)).toMatchObject({ kind: "verpasst", hint: "nicht gespielt" });
+  it("vergangene Spieltage vor unserem Start", () => {
+    expect(by(1)).toMatchObject({ kind: "vorstart", badge: "VOR START", hint: "vor unserem Start" });
+    // ohne jeden gespielten Spieltag: alles Vergangene ist „vor Start“
+    expect(seasonTiles([r(1, { status: "auswertung" })])[0].kind).toBe("vorstart");
+  });
+  it("nach unserem Start ausgelassen: nicht gespielt", () => {
+    const [, b] = seasonTiles([r(8, { played: true }), r(9, { status: "abgeschlossen" })]);
+    expect(b).toMatchObject({ kind: "verpasst", hint: "nicht gespielt" });
   });
   it("gewertet mit Sieger", () => {
     expect(by(8)).toMatchObject({ kind: "gewertet", badge: "SIEG BENT", badgeColor: "bent", points: { bent: 14, bjoern: 10, winner: "bent" } });

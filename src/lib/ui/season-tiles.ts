@@ -1,6 +1,6 @@
 import type { MatchdayResult } from "@/lib/scoring/assemble";
 
-export type TileKind = "gewertet" | "laufend" | "aktuell" | "verpasst" | "zukunft";
+export type TileKind = "gewertet" | "laufend" | "aktuell" | "vorstart" | "verpasst" | "zukunft";
 
 export interface Tile {
   number: number;
@@ -34,6 +34,8 @@ export function seasonTiles(results: MatchdayResult[]): Tile[] {
   const sorted = [...results].sort((a, b) => a.number - b.number);
   const upcoming = ["vorbereitung", "thesen_draft", "spieler_draft"];
   const current = sorted.find((r) => upcoming.includes(r.status))?.number ?? null;
+  // Vor unserem ersten gespielten Spieltag: „vor Start“ statt „nicht gespielt“
+  const firstPlayed = sorted.find((r) => r.played)?.number ?? null;
 
   return sorted.map((r): Tile => {
     const pts = { bent: r.bent.total, bjoern: r.bjoern.total, winner: r.winner };
@@ -82,6 +84,9 @@ export function seasonTiles(results: MatchdayResult[]): Tile[] {
     }
 
     if (!r.played && r.status !== "vorbereitung" && !upcoming.includes(r.status)) {
+      if (firstPlayed === null || r.number < firstPlayed) {
+        return { number: r.number, kind: "vorstart", badge: "VOR START", badgeColor: "faint", points: null, hint: "vor unserem Start" };
+      }
       return { number: r.number, kind: "verpasst", badge: "", badgeColor: "faint", points: null, hint: "nicht gespielt" };
     }
 

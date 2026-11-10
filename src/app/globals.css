@@ -332,6 +332,7 @@ a:hover {
   background: var(--surface-raised);
   border: 2px solid var(--amber);
 }
+.tile-vorstart,
 .tile-verpasst,
 .tile-zukunft {
   background: var(--surface-sunken);
@@ -350,6 +351,7 @@ a:hover {
   font-size: 22px;
   white-space: nowrap; /* „ST 10“ nie umbrechen */
 }
+.tile-vorstart .tile-number,
 .tile-verpasst .tile-number,
 .tile-zukunft .tile-number {
   color: var(--text-faint);
@@ -1810,4 +1812,305 @@ a.tile-link:focus-visible {
 }
 .field-score-head {
   flex-wrap: wrap;
+}
+
+/* ---------- Saisonübersicht: Gesamtstand ---------- */
+.standing {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px 16px;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  padding: 18px 20px;
+}
+.standing-side {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.standing-big {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 48px;
+  line-height: 1;
+}
+.standing-vs {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 36px;
+  color: var(--text-faint);
+}
+.standing .side-bent,
+.standing .side-bjoern {
+  background: none;
+  border: 0;
+}
+.standing .side-bent .label-small {
+  color: var(--bent-light);
+}
+.standing .side-bjoern .label-small {
+  color: var(--bjoern-light);
+}
+.standing-record {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 16px;
+  font-size: 13px;
+  border-top: 1px solid var(--line-faint);
+  padding-top: 10px;
+}
+
+/* ---------- Statistik ---------- */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kpi-bent {
+  background: var(--bent-card);
+  border-color: var(--bent);
+}
+.kpi-bent .label-small {
+  color: var(--bent-light);
+}
+.kpi-bjoern {
+  background: var(--bjoern-card);
+  border-color: var(--bjoern);
+}
+.kpi-bjoern .label-small {
+  color: var(--bjoern-light);
+}
+.kpi-big {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 48px;
+  line-height: 1.05;
+}
+.kpi-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.provisional-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--amber);
+}
+.stats-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.stats-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 560px), 1fr));
+  gap: 20px;
+  align-items: start;
+}
+.legend-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-left: 8px;
+  vertical-align: -1px;
+}
+.sw-bent {
+  background: var(--bent);
+}
+.sw-bjoern {
+  background: repeating-linear-gradient(135deg, var(--bjoern) 0 4px, #a8031f 4px 6px);
+}
+.sw-prov {
+  background: var(--text-faint);
+  opacity: 0.6;
+}
+.chart-scroll {
+  overflow-x: auto;
+}
+.chart-plot {
+  position: relative;
+  display: flex;
+  gap: 2px;
+  box-sizing: border-box;
+}
+.chart-zero {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--line);
+}
+.chart-group {
+  flex: 1 1 0;
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  min-width: 56px;
+}
+.chart-col {
+  position: relative;
+  width: 22px;
+  height: 100%;
+}
+.chart-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-radius: 4px 4px 0 0;
+}
+.chart-bar.is-neg {
+  border-radius: 0 0 4px 4px;
+}
+.bar-bent {
+  background: var(--bent);
+}
+/* Schraffur: Bent und Björn auch ohne Rot-Grün-Unterscheidung auseinanderhalten */
+.bar-bjoern {
+  background: repeating-linear-gradient(135deg, var(--bjoern) 0 4px, #a8031f 4px 6px);
+}
+.chart-bar.is-prov {
+  opacity: 0.4;
+}
+.chart-val {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.chart-axis {
+  display: flex;
+  gap: 2px;
+}
+.chart-axis span {
+  flex: 1 1 0;
+  min-width: 56px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.table-toggle summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.stats-table-wrap {
+  overflow-x: auto;
+}
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.stats-table th,
+.stats-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--line-faint);
+  text-align: left;
+  vertical-align: top;
+}
+.stats-table thead th {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.stats-table tbody th {
+  font-weight: 500;
+}
+.stats-table tbody th .rank-name,
+.stats-table tbody th .rank-meta {
+  display: block;
+}
+.stats-table .num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.stats-table .is-ahead {
+  font-weight: 700;
+}
+.stats-table .row-strong th,
+.stats-table .row-strong td {
+  font-weight: 700;
+  border-bottom-color: var(--line);
+}
+.use-full {
+  color: var(--amber);
+  font-weight: 700;
+}
+.rank-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.rank-row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-faint);
+}
+.rank-no {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--text-muted);
+}
+.rank-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.rank-name {
+  font-weight: 600;
+}
+.rank-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.rank-who {
+  font-size: 12px;
+  font-weight: 600;
+}
+.who-bent {
+  color: var(--bent-light);
+}
+.who-bjoern {
+  color: var(--bjoern-light);
+}
+.rank-pts {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+  min-width: 36px;
+  text-align: right;
 }
