@@ -9,6 +9,8 @@ import { createClient } from "@/lib/supabase/client";
 import { useRealtime } from "@/lib/supabase/realtime";
 import { QUESTION_LABELS, QUESTION_SHORT } from "@/lib/ui/prep-labels";
 import { StartDraftButton } from "@/components/StartDraftButton";
+import { HandoverOverlay } from "@/components/HandoverOverlay";
+import { draftActor, handoverTo } from "@/lib/matchday/single-device";
 import { makeThesisPick } from "../actions";
 
 type Manager = "bent" | "bjoern";
@@ -47,6 +49,8 @@ export function DraftBoard({
   initialPicks,
   locked,
   playerDraftStarted,
+  isAdmin = false,
+  singleDevice = false,
 }: {
   matchdayId: number;
   number: number;
@@ -57,6 +61,9 @@ export function DraftBoard({
   initialPicks: DraftPick[];
   locked: boolean;
   playerDraftStarted: boolean;
+  isAdmin?: boolean;
+  /** Ein-Gerät-Modus: der Admin zieht für den, der dran ist */
+  singleDevice?: boolean;
 }) {
   const [picks, setPicks] = useState<DraftPick[]>(initialPicks);
   const [selThesis, setSelThesis] = useState<number | null>(null);
@@ -65,6 +72,7 @@ export function DraftBoard({
   const [pending, startTransition] = useTransition();
   const [dragging, setDragging] = useState<number | null>(null);
   const [dropTarget, setDropTarget] = useState<ThesisField | null>(null);
+  const [handover, setHandover] = useState<Manager | null>(null);
 
   const addPicks = useCallback((list: DraftPick[]) => {
     setPicks((prev) => {
@@ -94,7 +102,10 @@ export function DraftBoard({
   const done = picks.length >= 10;
   const turn: Manager | null = done || locked ? null : snakeTurn(starter, next);
   const inARow = turn ? picksInARow(next) : 0;
-  const myTurn = !!me && turn === me && !locked;
+  // Wer zieht an diesem Gerät? Im Ein-Gerät-Modus der, der laut Reihenfolge dran ist
+  const shared = singleDevice && isAdmin;
+  const actor = draftActor({ mySlot: me, isAdmin, singleDevice }, turn);
+  const myTurn = !!actor && turn === actor && !locked;
   const thesisById = useMemo(() => new Map(theses.map((t) => [t.id, t])), [theses]);
   const usedTheses = new Set(picks.map((p) => p.thesisId));
   const pool = theses.filter((t) => !usedTheses.has(t.id));
@@ -104,12 +115,14 @@ export function DraftBoard({
     if (selThesis === null || selField === null) return;
     const thesisId = selThesis;
     const field = selField;
-    if (!myTurn || usedTheses.has(thesisId) || slot(me!, field)) return;
+    if (!myTurn || usedTheses.has(thesisId) || slot(actor!, field)) return;
+    const by = actor!;
     startTransition(async () => {
       setError(null);
       const res = await makeThesisPick(matchdayId, field, thesisId);
       if (res.ok) {
-        addPicks([{ pickNo: next, manager: me!, field, thesisId }]);
+        addPicks([{ pickNo: next, manager: by, field, thesisId }]);
+        if (shared) setHandover(handoverTo(by, next + 1 <= 10 ? snakeTurn(starter, next + 1) : null));
         setSelThesis(null);
         setSelField(null);
       } else setError(res.error);
@@ -164,7 +177,7 @@ export function DraftBoard({
             </div>
           );
         }
-        if (m === me && myTurn) {
+        if (m === actor && myTurn) {
           const preview = selField === f && selThesis !== null ? thesisById.get(selThesis) : null;
           return (
             <button
@@ -198,11 +211,12 @@ export function DraftBoard({
     ? "Thesen-Draft fertig"
     : locked
       ? "Deadline vorbei, Draft gesperrt"
-      : `${myTurn ? "Du bist" : `${NAME[turn!]} ist`} am Zug · ${inARow} ${inARow === 1 ? "These" : "Thesen"} setzen`;
+      : `${myTurn && !shared ? "Du bist" : `${NAME[turn!]} ist`} am Zug · ${inARow} ${inARow === 1 ? "These" : "Thesen"} setzen`;
 
   return (
     <>
-      <div className={`draft-status ${turn ? `status-${turn}` : ""}`} role="status" aria-live="polite">
+      {handover && <HandoverOverlay to={handover} onContinue={() => setHandover(null)} />}
+      <div className={`draft-status ${turn ? `status-${turn}` : ""} ${shared ? "is-big" : ""}`} role="status" aria-live="polite">
         {turn && <span className="dot" />}
         <span style={{ fontWeight: 600 }}>{status}</span>
       </div>
@@ -270,7 +284,7 @@ export function DraftBoard({
                     Abbrechen
                   </button>
                 )}
-                <button type="button" className={`btn btn-${me}`} disabled={pending || selThesis === null || selField === null} onClick={place}>
+                <button type="button" className={`btn btn-${actor}`} disabled={pending || selThesis === null || selField === null} onClick={place}>
                   {pending ? "Setze …" : "Setzen"}
                 </button>
               </span>
@@ -312,7 +326,7 @@ export function DraftBoard({
             <button
               key={t.id}
               type="button"
-              className={`pool-item ${selThesis === t.id ? `is-selected sel-${me}` : ""} ${dragging === t.id ? "is-dragging" : ""}`}
+              className={`pool-item ${selThesis === t.id ? `is-selected sel-${actor}` : ""} ${dragging === t.id ? "is-dragging" : ""}`}
               disabled={!myTurn}
               draggable={myTurn}
               onDragStart={(e) => onDragStart(e, t.id)}

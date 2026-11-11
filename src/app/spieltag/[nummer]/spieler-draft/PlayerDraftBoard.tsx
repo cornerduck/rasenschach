@@ -10,6 +10,8 @@ import type { KnightCategory, Piece } from "@/lib/scoring/types";
 import { createClient } from "@/lib/supabase/client";
 import { useRealtime } from "@/lib/supabase/realtime";
 import { PIECE_LABEL, PIECE_ORDER, POSITION_LABEL, POSITION_ORDER, pieceRole, type Position } from "@/lib/ui/pieces";
+import { HandoverOverlay } from "@/components/HandoverOverlay";
+import { draftActor, handoverTo } from "@/lib/matchday/single-device";
 import { makePlayerPick } from "../actions";
 
 type Manager = "bent" | "bjoern";
@@ -66,6 +68,8 @@ export function PlayerDraftBoard({
   initialPicks,
   limit,
   locked,
+  isAdmin = false,
+  singleDevice = false,
 }: {
   matchdayId: number;
   me: Manager | null;
@@ -77,6 +81,9 @@ export function PlayerDraftBoard({
   initialPicks: PlayerPick[];
   limit: number;
   locked: boolean;
+  isAdmin?: boolean;
+  /** Ein-Gerät-Modus: der Admin zieht für den, der dran ist */
+  singleDevice?: boolean;
 }) {
   const [picks, setPicks] = useState<PlayerPick[]>(initialPicks);
   const [selPlayer, setSelPlayer] = useState<number | null>(null);
@@ -85,6 +92,7 @@ export function PlayerDraftBoard({
   const [pending, startTransition] = useTransition();
   const [dragging, setDragging] = useState<number | null>(null);
   const [dropTarget, setDropTarget] = useState<Piece | null>(null);
+  const [handover, setHandover] = useState<Manager | null>(null);
   const [query, setQuery] = useState("");
   const [position, setPosition] = useState<Position | null>(null);
   const [clubFilter, setClubFilter] = useState<number | null>(null);
@@ -122,7 +130,12 @@ export function PlayerDraftBoard({
   const done = picks.length >= 10;
   const turn: Manager | null = done || locked ? null : snakeTurn(first, next);
   const inARow = turn ? picksInARow(next) : 0;
-  const myTurn = !!me && turn === me && !locked;
+  // Wer zieht an diesem Gerät? Im Ein-Gerät-Modus der, der laut Reihenfolge dran ist
+  const shared = singleDevice && isAdmin;
+  const actor = draftActor({ mySlot: me, isAdmin, singleDevice }, turn);
+  const myTurn = !!actor && turn === actor && !locked;
+  // Aus wessen Sicht zeigt die Liste Einsätze und 3er-Limit?
+  const viewer = actor ?? me;
   const slot = (m: Manager, piece: Piece) => picks.find((p) => p.manager === m && p.piece === piece);
 
   // Ist diese Kombination erlaubt? (gleiche Regeln wie in der Datenbank, damit man es sofort sieht)
@@ -159,12 +172,14 @@ export function PlayerDraftBoard({
     if (selPlayer === null || selPiece === null || !myTurn) return;
     const playerId = selPlayer;
     const piece = selPiece;
-    if (takenBy.has(playerId) || slot(me!, piece) || !fits(playerId, piece)) return;
+    if (takenBy.has(playerId) || slot(actor!, piece) || !fits(playerId, piece)) return;
+    const by = actor!;
     startTransition(async () => {
       setError(null);
       const res = await makePlayerPick(matchdayId, piece, playerId);
       if (res.ok) {
-        addPicks([{ pickNo: next, manager: me!, piece, playerId }]);
+        addPicks([{ pickNo: next, manager: by, piece, playerId }]);
+        if (shared) setHandover(handoverTo(by, next + 1 <= 10 ? snakeTurn(first, next + 1) : null));
         setSelPlayer(null);
         setSelPiece(null);
       } else setError(res.error);
@@ -258,7 +273,7 @@ export function PlayerDraftBoard({
             </div>
           );
         }
-        if (m === me && myTurn) {
+        if (m === actor && myTurn) {
           const preview = selPiece === piece && selPlayer !== null ? playerById.get(selPlayer) : null;
           const allowed = fits(selPlayer ?? dragging, piece);
           return (
@@ -295,12 +310,13 @@ export function PlayerDraftBoard({
     ? "Spieler-Draft fertig"
     : locked
       ? "Deadline vorbei, Draft gesperrt"
-      : `${myTurn ? "Du bist" : `${NAME[turn!]} ist`} am Zug · ${inARow} Spieler setzen`;
+      : `${myTurn && !shared ? "Du bist" : `${NAME[turn!]} ist`} am Zug · ${inARow} Spieler setzen`;
   const sel = selPlayer !== null ? playerById.get(selPlayer) : null;
 
   return (
     <>
-      <div className={`draft-status ${turn ? `status-${turn}` : ""}`} role="status" aria-live="polite">
+      {handover && <HandoverOverlay to={handover} onContinue={() => setHandover(null)} />}
+      <div className={`draft-status ${turn ? `status-${turn}` : ""} ${shared ? "is-big" : ""}`} role="status" aria-live="polite">
         {turn && <span className="dot" />}
         <span style={{ fontWeight: 600 }}>{status}</span>
       </div>
@@ -373,7 +389,7 @@ export function PlayerDraftBoard({
                     Abbrechen
                   </button>
                 )}
-                <button type="button" className={`btn btn-${me}`} disabled={pending || selPlayer === null || selPiece === null} onClick={place}>
+                <button type="button" className={`btn btn-${actor}`} disabled={pending || selPlayer === null || selPiece === null} onClick={place}>
                   {pending ? "Setze …" : "Setzen"}
                 </button>
               </span>
@@ -458,15 +474,15 @@ export function PlayerDraftBoard({
           <div className="pp-list">
             {shown.map((p) => {
               const c = clubById.get(p.clubId);
-              const blocked = blockReason(p, me, takenBy.get(p.id), limit);
+              const blocked = blockReason(p, viewer, takenBy.get(p.id), limit);
               const wrongForPiece = !fits(p.id, selPiece);
               const disabled = !myTurn || !!blocked || wrongForPiece;
-              const usage = me ? `${p.used[me]}/${limit}` : "";
+              const usage = viewer ? `${p.used[viewer]}/${limit}` : "";
               return (
                 <button
                   key={p.id}
                   type="button"
-                  className={`pp-item ${selPlayer === p.id ? `is-selected sel-${me}` : ""} ${dragging === p.id ? "is-dragging" : ""} ${blocked || wrongForPiece ? "is-blocked" : ""}`}
+                  className={`pp-item ${selPlayer === p.id ? `is-selected sel-${actor}` : ""} ${dragging === p.id ? "is-dragging" : ""} ${blocked || wrongForPiece ? "is-blocked" : ""}`}
                   disabled={disabled}
                   draggable={!disabled}
                   onDragStart={(e) => onDragStart(e, p.id)}
@@ -483,8 +499,8 @@ export function PlayerDraftBoard({
                     </span>
                   </span>
                   <span
-                    className={`pp-usage ${blocked === "gesetzt" ? `use-${me}` : blocked?.startsWith("bei ") ? `use-${otherOf(me ?? "bent")}` : blocked ? "use-limit" : ""}`}
-                    title={blocked && !blocked.startsWith("bei") && blocked !== "gesetzt" ? "Saisonlimit erreicht" : me ? "So oft hast du ihn diese Saison schon eingesetzt" : undefined}
+                    className={`pp-usage ${blocked === "gesetzt" ? `use-${viewer}` : blocked?.startsWith("bei ") ? `use-${otherOf(viewer ?? "bent")}` : blocked ? "use-limit" : ""}`}
+                    title={blocked && !blocked.startsWith("bei") && blocked !== "gesetzt" ? "Saisonlimit erreicht" : viewer ? `So oft hat ${NAME[viewer]} ihn diese Saison schon eingesetzt` : undefined}
                   >
                     {blocked ?? usage}
                   </span>

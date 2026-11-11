@@ -5,7 +5,7 @@ import { formatRate, seasonStats, thesisRight } from "./season-stats";
 
 const NOW = new Date("2026-11-10T12:00:00Z");
 const th = (field: ThesisField, outcome: boolean, points: number | null): ThesisResult => ({
-  field, pickNo: 1, thesisId: 1, text: "", outcome, confirmedBent: true, confirmedBjoern: points !== null, points,
+  field, pickNo: 1, thesisId: 1, text: "", outcome, confirmedBent: true, confirmedBjoern: points !== null, sharedBent: false, sharedBjoern: false, points,
 });
 const pl = (piece: Piece, playerId: number, points: number): PlayerResult => ({
   piece, pickNo: 1, playerId, stats: {}, ranks: {}, score: { points, lines: points ? [{ label: "x", points }] : [] },

@@ -2317,3 +2317,142 @@ a.tile-link:focus-visible {
   outline: 2px solid var(--text);
   outline-offset: 2px;
 }
+
+/* ---------- Ein-Gerät-Modus ---------- */
+.sd-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.sd-switch {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--input);
+  border-radius: 999px;
+  padding: 4px 10px 4px 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.sd-knob {
+  width: 28px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--input);
+  position: relative;
+}
+.sd-knob::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--text-muted);
+  transition: transform 120ms ease;
+}
+.sd-switch.is-on {
+  color: var(--text);
+  border-color: var(--amber);
+}
+.sd-switch.is-on .sd-knob {
+  background: var(--amber);
+}
+.sd-switch.is-on .sd-knob::after {
+  transform: translateX(12px);
+  background: #0b0d0c;
+}
+.sd-chip {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--amber);
+  border: 1px solid var(--amber);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+.draft-status.is-big {
+  align-self: stretch;
+  justify-content: center;
+  padding: 14px 20px;
+  font-size: 22px;
+  font-family: var(--font-display);
+  letter-spacing: 0.03em;
+  border-width: 2px;
+}
+.draft-status.is-big .dot {
+  width: 12px;
+  height: 12px;
+}
+.draft-status.is-big.status-bent {
+  background: var(--bent);
+  color: #ffffff;
+}
+.draft-status.is-big.status-bjoern {
+  background: var(--bjoern);
+  color: #ffffff;
+}
+.draft-status.is-big .dot {
+  background: #ffffff;
+}
+.handover {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(11, 13, 12, 0.88);
+}
+.handover-card {
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  padding: 32px 24px;
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+  border: 2px solid var(--line);
+}
+.handover-bent .handover-card {
+  border-color: var(--bent);
+  background: var(--bent-card);
+}
+.handover-bjoern .handover-card {
+  border-color: var(--bjoern);
+  background: var(--bjoern-card);
+}
+.handover-bent .label-small {
+  color: var(--bent-light);
+}
+.handover-bjoern .label-small {
+  color: var(--bjoern-light);
+}
+.handover-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 1.1;
+}
+.handover .btn {
+  min-width: 160px;
+  font-size: 16px;
+}
+.shared-note {
+  color: var(--amber);
+}
+.thesis-confirm.confirm-bjoern .btn-secondary {
+  border-color: var(--bjoern);
+}
+.thesis-confirm.confirm-bent .btn-secondary {
+  border-color: var(--bent);
+}

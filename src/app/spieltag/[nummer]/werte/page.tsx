@@ -45,7 +45,7 @@ async function ValuesContent({ params }: { params: PageProps<"/spieltag/[nummer]
   if (!me?.isAdmin) {
     return (
       <>
-        <MatchdayHeader number={number} step="spielfeld" />
+        <MatchdayHeader number={number} step="spielfeld" mode={{ matchdayId: ctx.matchday.id, on: ctx.matchday.singleDevice, isAdmin: !!me?.isAdmin }} />
         <main className="page">
           <div className="panel">
             <h1 className="panel-title">Nur für Bent</h1>
@@ -139,7 +139,7 @@ async function ValuesContent({ params }: { params: PageProps<"/spieltag/[nummer]
 
   return (
     <>
-      <MatchdayHeader number={number} step="spielfeld" />
+      <MatchdayHeader number={number} step="spielfeld" mode={{ matchdayId: ctx.matchday.id, on: ctx.matchday.singleDevice, isAdmin: !!me?.isAdmin }} />
       <MatchdayLive matchdayId={md.id} number={number} page="auswertung" />
       <main className="page">
         <div className="field-title">
@@ -192,7 +192,10 @@ async function ValuesContent({ params }: { params: PageProps<"/spieltag/[nummer]
                   <div className="resolve-actions">
                     <ThesisResolver thesisId={t.thesisId} outcome={t.outcome} locked={closed} />
                     <span className={t.confirmedBent ? "ok-bent" : "faint"}>Bent {t.confirmedBent ? "✓" : "offen"}</span>
-                    <span className={t.confirmedBjoern ? "ok-bjoern" : "faint"}>Björn {t.confirmedBjoern ? "✓" : "offen"}</span>
+                    <span className={t.confirmedBjoern ? "ok-bjoern" : "faint"}>
+                      Björn {t.confirmedBjoern ? "✓" : "offen"}
+                      {t.confirmedBjoern && t.sharedBjoern && <span className="shared-note"> (gemeinsames Gerät)</span>}
+                    </span>
                     <span className="resolve-pts">{t.points !== null ? signed(t.points) : ""}</span>
                   </div>
                 </div>

@@ -114,13 +114,21 @@ const scoringRpc = async (fn: string, args: Record<string, unknown>) => {
 };
 
 /** These auflösen (setzt automatisch die eigene Bestätigung). null = Ergebnis zurücknehmen */
-export async function setThesisOutcome(thesisId: number, outcome: boolean | null): Promise<ActionResult> {
-  return rpc("set_thesis_outcome", { p_thesis_id: thesisId, p_outcome: outcome });
+export async function setThesisOutcome(thesisId: number, outcome: boolean | null, as?: "bent" | "bjoern"): Promise<ActionResult> {
+  return rpc("set_thesis_outcome", { p_thesis_id: thesisId, p_outcome: outcome, ...(as ? { p_as: as } : {}) });
 }
 
 /** Ergebnis einer These bestätigen */
-export async function confirmThesis(thesisId: number): Promise<ActionResult> {
-  return rpc("confirm_thesis", { p_thesis_id: thesisId });
+export async function confirmThesis(thesisId: number, as?: "bent" | "bjoern"): Promise<ActionResult> {
+  return rpc("confirm_thesis", { p_thesis_id: thesisId, ...(as ? { p_as: as } : {}) });
+}
+
+/** Admin: Ein-Gerät-Modus für einen Spieltag ein- oder ausschalten */
+export async function setSingleDevice(matchdayId: number, on: boolean): Promise<ActionResult> {
+  const res = await rpc("set_single_device", { p_matchday_id: matchdayId, p_on: on });
+  return !res.ok && /set_single_device/.test(res.error)
+    ? { ok: false, error: "Die Datenbank kennt den Ein-Gerät-Modus noch nicht. Bitte zuerst die neue Migration ausführen." }
+    : res;
 }
 
 /** Admin: Wert per Hand setzen; null = Handeingabe löschen (dann gilt der automatische Wert) */

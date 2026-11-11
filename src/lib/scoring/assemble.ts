@@ -33,6 +33,9 @@ export interface RawThesisPick {
   outcome: boolean | null;
   confirmedBent: boolean;
   confirmedBjoern: boolean;
+  /** Bestätigung am gemeinsamen Gerät (Ein-Gerät-Modus) abgegeben */
+  sharedBent?: boolean;
+  sharedBjoern?: boolean;
 }
 
 export interface RawPlayerPick {
@@ -131,6 +134,9 @@ export interface ThesisResult {
   outcome: boolean | null;
   confirmedBent: boolean;
   confirmedBjoern: boolean;
+  /** Bestätigung am gemeinsamen Gerät abgegeben */
+  sharedBent: boolean;
+  sharedBjoern: boolean;
   /** null = noch nicht von beiden bestätigt */
   points: number | null;
 }
@@ -364,6 +370,8 @@ export function assembleMatchday(raw: MatchdayRaw, now: Date = new Date()): Matc
       outcome: t.outcome,
       confirmedBent: t.confirmedBent,
       confirmedBjoern: t.confirmedBjoern,
+      sharedBent: !!t.sharedBent,
+      sharedBjoern: !!t.sharedBjoern,
       points,
     });
     if (points === null) m.openTheses++;

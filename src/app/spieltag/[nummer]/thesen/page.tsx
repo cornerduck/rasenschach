@@ -40,7 +40,7 @@ async function ThesesContent({ params }: { params: PageProps<"/spieltag/[nummer]
 
   return (
     <>
-      <MatchdayHeader number={number} step="thesen" />
+      <MatchdayHeader number={number} step="thesen" mode={{ matchdayId: ctx.matchday.id, on: ctx.matchday.singleDevice, isAdmin: !!me?.isAdmin }} />
       <MatchdayLive matchdayId={ctx.matchday.id} number={number} page="thesen" started={ctx.draftStarted} />
       <main className="page">
         <div>

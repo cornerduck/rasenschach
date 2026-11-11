@@ -58,11 +58,19 @@ async function loadRaw(db: SupabaseClient, mdRows: MdRow[]): Promise<MatchdayRaw
     fetchAll<{ matchday_id: number }>((a, b) => db.from("theses").select("matchday_id").in("matchday_id", ids).order("id").range(a, b)),
     fetchAll<{
       matchday_id: number; manager: "bent" | "bjoern"; field: MatchdayRaw["thesisPicks"][number]["field"]; pick_no: number; thesis_id: number;
-      theses: { text: string; outcome: boolean | null; confirmed_bent: boolean; confirmed_bjoern: boolean };
+      theses: {
+        text: string;
+        outcome: boolean | null;
+        confirmed_bent: boolean;
+        confirmed_bjoern: boolean;
+        confirmed_bent_shared?: boolean;
+        confirmed_bjoern_shared?: boolean;
+      };
     }>((a, b) =>
       db
         .from("thesis_picks")
-        .select("matchday_id, manager, field, pick_no, thesis_id, theses(text, outcome, confirmed_bent, confirmed_bjoern)")
+        // theses(*): läuft auch, solange die Spalten für den Ein-Gerät-Modus noch fehlen
+        .select("matchday_id, manager, field, pick_no, thesis_id, theses(*)")
         .in("matchday_id", ids)
         .order("id")
         .range(a, b) as never,
@@ -146,6 +154,8 @@ async function loadRaw(db: SupabaseClient, mdRows: MdRow[]): Promise<MatchdayRaw
       outcome: t.theses.outcome,
       confirmedBent: t.theses.confirmed_bent,
       confirmedBjoern: t.theses.confirmed_bjoern,
+      sharedBent: !!t.theses.confirmed_bent_shared,
+      sharedBjoern: !!t.theses.confirmed_bjoern_shared,
     })),
     playerPicks: (ppBy.get(md.id) ?? []).map((p) => ({
       manager: p.manager,

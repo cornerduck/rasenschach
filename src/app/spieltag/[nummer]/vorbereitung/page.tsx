@@ -30,7 +30,7 @@ async function PrepContent({ params }: { params: PageProps<"/spieltag/[nummer]/v
 
   return (
     <>
-      <MatchdayHeader number={number} step="vorbereitung" />
+      <MatchdayHeader number={number} step="vorbereitung" mode={{ matchdayId: ctx.matchday.id, on: ctx.matchday.singleDevice, isAdmin: !!me?.isAdmin }} />
       <MatchdayLive matchdayId={md.id} number={number} page="vorbereitung" started={ctx.draftStarted} />
       <main className="page">
         <div>

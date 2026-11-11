@@ -19,6 +19,7 @@ import { clubLogo } from "@/lib/ui/club";
 import { signed } from "@/lib/ui/evaluation";
 import { PIECE_LABEL, PIECE_ORDER } from "@/lib/ui/pieces";
 import { QUESTION_LABELS } from "@/lib/ui/prep-labels";
+import { confirmableFor } from "@/lib/matchday/single-device";
 import { ThesisConfirm } from "./ThesisConfirm";
 
 export const metadata: Metadata = { title: "Spielfeld · Rasenschach" };
@@ -107,7 +108,9 @@ async function FieldContent({ params }: { params: PageProps<"/spieltag/[nummer]/
         ? null
         : thesisPoints(field, { outcome: t.outcome, confirmedBent: true, confirmedBjoern: true }, md.questionValue);
     const state = t.outcome === null ? "offen" : t.outcome ? "eingetroffen" : "nicht eingetroffen";
-    const needMe = !!me?.slot && waiting.includes(me.slot) && !closed;
+    // Für wen darf dieses Gerät bestätigen? (im Ein-Gerät-Modus der Admin auch für Björn)
+    const canFor = closed ? [] : confirmableFor({ mySlot: me?.slot ?? null, isAdmin: !!me?.isAdmin, singleDevice: md.singleDevice }, waiting);
+    const sharedNote = (["bent", "bjoern"] as const).filter((x) => (x === "bent" ? t.sharedBent : t.sharedBjoern));
     return (
       <div key={key} className={`field-card card-${m} ${t.outcome === null ? "" : both ? "is-resolved" : "is-pending"}`}>
         <div className="field-card-top">
@@ -119,12 +122,17 @@ async function FieldContent({ params }: { params: PageProps<"/spieltag/[nummer]/
           <span className="field-card-note">
             {state}
             {waiting.length > 0 && ` · wartet auf ${waiting.map((x) => NAME[x]).join(" und ")}`}
+            {sharedNote.length > 0 && (
+              <span className="shared-note"> · {sharedNote.map((x) => NAME[x]).join(" und ")} am gemeinsamen Gerät bestätigt</span>
+            )}
           </span>
           <span className={`field-pts ${t.points !== null ? ptsClass(t.points) : "is-tentative"}`}>
             {t.points !== null ? signed(t.points) : tentative !== null ? `vorl. ${signed(tentative)}` : "–"}
           </span>
         </div>
-        {needMe && <ThesisConfirm thesisId={t.thesisId} outcome={t.outcome!} />}
+        {canFor.map((x) => (
+          <ThesisConfirm key={x} thesisId={t.thesisId} outcome={t.outcome!} as={x === me?.slot ? undefined : x} name={canFor.length > 1 || x !== me?.slot ? NAME[x] : undefined} />
+        ))}
       </div>
     );
   };
@@ -142,7 +150,7 @@ async function FieldContent({ params }: { params: PageProps<"/spieltag/[nummer]/
 
   return (
     <>
-      <MatchdayHeader number={number} step="spielfeld" />
+      <MatchdayHeader number={number} step="spielfeld" mode={{ matchdayId: ctx.matchday.id, on: ctx.matchday.singleDevice, isAdmin: !!me?.isAdmin }} />
       <MatchdayLive matchdayId={md.id} number={number} page="auswertung" />
       <main className="page">
         <div className="field-layout">

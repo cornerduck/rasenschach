@@ -43,7 +43,7 @@ async function PlayerDraftContent({ params }: { params: PageProps<"/spieltag/[nu
     const ready = ctx.thesisPickCount >= 10 && !!md.thesisStarter && !locked;
     return (
       <>
-        <MatchdayHeader number={number} step="spieler" />
+        <MatchdayHeader number={number} step="spieler" mode={{ matchdayId: ctx.matchday.id, on: ctx.matchday.singleDevice, isAdmin: !!me?.isAdmin }} />
         {/* wechselt live in den Draft, sobald der andere startet */}
         <MatchdayLive matchdayId={md.id} number={number} page="spieler-wartet" />
         <main className="page">
@@ -131,7 +131,7 @@ async function PlayerDraftContent({ params }: { params: PageProps<"/spieltag/[nu
 
   return (
     <>
-      <MatchdayHeader number={number} step="spieler" />
+      <MatchdayHeader number={number} step="spieler" mode={{ matchdayId: ctx.matchday.id, on: ctx.matchday.singleDevice, isAdmin: !!me?.isAdmin }} />
       <MatchdayLive matchdayId={md.id} number={number} page="spieler-draft" />
       <main className="page">
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-end", gap: 12 }}>
@@ -151,6 +151,8 @@ async function PlayerDraftContent({ params }: { params: PageProps<"/spieltag/[nu
           initialPicks={picks}
           limit={limit}
           locked={locked}
+          isAdmin={!!me?.isAdmin}
+          singleDevice={md.singleDevice}
         />
         {me?.isAdmin && !md.closedAt && <ResetPlayerDraft matchdayId={md.id} number={number} />}
       </main>

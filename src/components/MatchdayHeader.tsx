@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AppHeader } from "./AppHeader";
+import { SingleDeviceToggle } from "./SingleDeviceToggle";
 
 export type Step = "thesen" | "vorbereitung" | "draft" | "spieler" | "spielfeld";
 
@@ -12,7 +13,16 @@ const STEPS: { key: Step; label: string; path: string | null }[] = [
 ];
 
 /** Kopfzeile für die Spieltagsseiten mit Schrittleiste */
-export function MatchdayHeader({ number, step }: { number: number; step: Step }) {
+export function MatchdayHeader({
+  number,
+  step,
+  mode,
+}: {
+  number: number;
+  step: Step;
+  /** Ein-Gerät-Modus: Schalter (Admin) bzw. Hinweis (Björn) */
+  mode?: { matchdayId: number; on: boolean; isAdmin: boolean };
+}) {
   const index = STEPS.findIndex((s) => s.key === step);
   const next = STEPS[index + 1];
   return (
@@ -42,7 +52,8 @@ export function MatchdayHeader({ number, step }: { number: number; step: Step })
             );
           })}
         </ol>
-        <span className="muted" style={{ fontSize: 12 }}>
+        <span className="muted" style={{ fontSize: 12, display: "inline-flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          {mode && <SingleDeviceToggle matchdayId={mode.matchdayId} on={mode.on} isAdmin={mode.isAdmin} />}
           Schritt {index + 1} von {STEPS.length}
           {next ? ` · danach ${next.label}` : ""}
         </span>

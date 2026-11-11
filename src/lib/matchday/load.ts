@@ -40,6 +40,8 @@ export interface MatchdayContext {
     knightCategory: KnightCategory | null;
     thesisStarter: "bent" | "bjoern" | null;
     closedAt: string | null;
+    /** Ein-Gerät-Modus: beide spielen am Admin-Konto */
+    singleDevice: boolean;
   };
   /** Thesen-Draft wurde gestartet (oder es gibt schon Züge) */
   draftStarted: boolean;
@@ -116,6 +118,7 @@ export async function loadMatchday(db: SupabaseClient, number: number, now = new
       knightCategory: md.knight_category,
       thesisStarter: md.thesis_starter,
       closedAt: md.closed_at,
+      singleDevice: !!md.single_device,
     },
     matches: rows,
     theses: thesesRows,

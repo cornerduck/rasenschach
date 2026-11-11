@@ -34,7 +34,7 @@ async function DraftContent({ params }: { params: PageProps<"/spieltag/[nummer]/
     const ready = ctx.prepComplete && !ctx.deadlinePassed && !md.closedAt;
     return (
       <>
-        <MatchdayHeader number={number} step="draft" />
+        <MatchdayHeader number={number} step="draft" mode={{ matchdayId: ctx.matchday.id, on: ctx.matchday.singleDevice, isAdmin: !!me?.isAdmin }} />
         {/* wechselt live in den Draft, sobald der andere startet */}
         <MatchdayLive matchdayId={md.id} number={number} page="vorbereitung" />
         <main className="page">
@@ -68,7 +68,7 @@ async function DraftContent({ params }: { params: PageProps<"/spieltag/[nummer]/
 
   return (
     <>
-      <MatchdayHeader number={number} step="draft" />
+      <MatchdayHeader number={number} step="draft" mode={{ matchdayId: ctx.matchday.id, on: ctx.matchday.singleDevice, isAdmin: !!me?.isAdmin }} />
       <MatchdayLive matchdayId={md.id} number={number} page="draft" playerStarted={ctx.playerDraftStarted} />
       <main className="page">
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-end", gap: 12 }}>
@@ -91,6 +91,8 @@ async function DraftContent({ params }: { params: PageProps<"/spieltag/[nummer]/
           initialPicks={picks}
           locked={ctx.deadlinePassed || !!md.closedAt}
           playerDraftStarted={ctx.playerDraftStarted}
+          isAdmin={!!me?.isAdmin}
+          singleDevice={md.singleDevice}
         />
         {me?.isAdmin && !md.closedAt && <ResetMatchday matchdayId={md.id} number={number} />}
       </main>
